@@ -1,0 +1,8 @@
+
+# variables de entorno
+.env
+
+# directorios que no quiero subir
+others/
+writings/
+data/others/

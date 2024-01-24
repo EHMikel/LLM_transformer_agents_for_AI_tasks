@@ -1,0 +1,16 @@
+The dataset refers to the operating parameters of an HVAC system that controls the environmental comfort of a non-residential building located in Turin (Italy).
+
+The dataset contains 11 variables:
+
+    timestamp;
+    temperatures of return, supply, and outdoor air [°C];
+    relative humidities of return, supply and outdoor air [% and outdoor air [%];
+    the temperature setpoint of the return air [°C];
+    the saturation temperature in the humidifier [°C];
+    power required by the fans [kW];
+    energy required by the fans [kWh].
+
+The data refer to the winters 2019-2020 and 2020-2021.
+
+The Source of this dataset is Borda, Davide (2022), “Development of Anomaly Detectors for HVAC Systems using Machine Learning”, Mendeley Data, V1, doi: 10.17632/mjhr46dkj6.1
+Please click here for the web link
