@@ -4,10 +4,10 @@ import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 from time import sleep
+import json
 
 # Cargar variables de entorno desde .env
 load_dotenv()
-
 
 # Acceder a la API key
 api_key = os.getenv("API_KEY")
@@ -35,23 +35,32 @@ def enviar_promt_completions_mode(
 
 
 def enviar_promt_chat_completions_mode(
-        mensaje: list, modelo: str = "gpt-4-1106-preview", formato: dict = None, 
-        maximo_tokens: int= 500, aleatoriedad: float= 0.5, probabilidad_acumulada: float= 0.5):
+        mensaje: list, modelo: str = "gpt-4-1106-preview", formato: dict = None, funciones:list= None, 
+        forzar_funciones= None,  maximo_tokens: int= 500, aleatoriedad: float= 0.1, probabilidad_acumulada: float= 0.9):
      
     respuesta = openai.chat.completions.create(
         messages= mensaje, 
         model= modelo, 
         response_format= None, 
+        tools= funciones,
+        tool_choice=forzar_funciones,
         max_tokens=maximo_tokens, 
         temperature=aleatoriedad, 
         top_p= probabilidad_acumulada
     )
+    # si no se proporcionan herramientaas o funciones
+    if funciones== None:
+        if formato == {'type': 'json_object'}: 
+            return respuesta['choices'][0]['message']['content']
+        
+        else: return respuesta.choices[0].message.content
 
-    if formato == {'type': 'json_object'}: 
-        return respuesta['choices'][0]['message']['content']
-    
-    else: return respuesta.choices[0].message.content
-
+    # SI se proporcionan herramientas o funciones
+    else: 
+        if formato == {'type': 'json_object'}: 
+            return json.loads(respuesta['choices'][0]['message']['tool_calls']['arguments'])
+        
+        else: return json.loads(respuesta.choices[0].message.tool_calls[0].function.arguments)
 
 def get_embedding(texto, model= "text-embedding-ada-002") -> list:
     text = texto.replace('\n', ' ')
@@ -70,7 +79,7 @@ def simular_respuesta_generativa(respuesta:str):
     pos_ini = 0
     pos_fin = 0
     while pos_fin < len(respuesta): 
-        pos_fin = pos_ini + np.random.randint(low= 1, high= 20)
+        pos_fin = pos_ini + int(1 + abs(round(np.random.normal(loc= 0, scale= 0.03), 2))*100)
         print(respuesta[pos_ini:pos_fin], end= '')
         pos_ini= pos_fin
-        sleep(np.random.uniform(low= 0, high= 0.2))
+        sleep(abs(0.0001 + np.random.normal(loc= 0, scale= 0.001)))

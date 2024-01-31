@@ -53,7 +53,7 @@ def cargar_lote_datos(m_samples, name, ruta_datos, formato= 'DataFrame'):
 
     ruta_completa = os.path.join(ruta_datos, name)
 
-    lote = pd.read_csv(ruta_completa).set_index('Timestamp').sample(m_samples)
+    lote = pd.read_csv(ruta_completa).set_index('Timestamp').iloc[-m_samples:, ::]
 
     if formato=='DataFrame': return lote
     else:                    return lote.to_numpy()
