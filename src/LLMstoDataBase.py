@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData
+import psycopg2
 from open_ai_utils import cosine_similarity, get_embedding
 import json
 from calcular_tokens import num_tokens_from_string
@@ -21,30 +22,40 @@ openai.api_key = api_key
 
 
 class LLMsToDataBase:
+    '''Clase en la cual se establecen las funcionalidades básicas para establecer una conexion entre 
+       los LLMs y bases de datos SQL mediante postgreSQL. Estas funcionalidades serán extendidas a 
+       otra clase que heredará de esta; SQLAgent
+    '''
 
+    # constructor de la clase
     def __init__(self, bbdd_name, user, password, host='localhost', port='5432'):
         self.engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{bbdd_name}")
         self.metadata = MetaData()
         self.bbdd_name = bbdd_name
-        self.data_path = '../data/nlp_to_sql/'
+        self.data_path = '../data/nlp_to_sql/'     # cambiar esta ruta por la ruta donde se guardaran los metadatos
 
 
+    # cerrar la conexion con la base de datos
     def close_connection(self):
         self.engine.dispose()
 
 
-    def simple_metadata_to_str(self):
+    # pasar metadatos simples a string
+    def simple_metadata_to_str(self) -> str:
         self.metadata.reflect(self.engine)
         tables_columns = {table.name: [column.name for column in table.columns] for table in self.metadata.tables.values()}
         return json.dumps(tables_columns, indent=4)
     
+
+    # pasar de columna dataframe a string
     @staticmethod
     def get_string_from_metadata_df(metadata_df) -> str:
         # mi_string = '\n'.join(metadata_df['metadata_str'].fillna(''))
         return metadata_df['metadata_str'].fillna('').str.cat(sep= '\n')
 
 
-    def full_metadata_to_str(self):
+    # pasar metadatos de dataframe a string
+    def full_metadata_to_str(self) -> str:
         self.metadata.reflect(self.engine)
         metadata = {}
 
@@ -52,7 +63,7 @@ class LLMsToDataBase:
         # Por cada tabla, se almacena información detallada de sus columnas en el diccionario 'tablas_columnas'.
         # Se crea una clave en el diccionario para cada nombre de tabla.
             metadata[table.name] = {                                     
-                "columnas": {column.name: {                            # dentro de cada tabla se crea un diccionario de 
+                "columnas": {column.name: {                           # dentro de cada tabla se crea un diccionario de 
                         "tipo": str(column.type),                     # Tipo de dato de la columna.
                         "nulo": column.nullable,                      # Booleano que indica si la columna acepta valores nulos.
                         "clave_primaria": column.primary_key,         # Booleano que indica si la columna es una clave primaria
@@ -63,7 +74,11 @@ class LLMsToDataBase:
         return json.dumps(metadata, indent=4)
 
 
+    # extraer metadatos básicos
     def simple_md_extraction_pipeline(self):
+        '''Función para extraer los metadatos básicos de la base de datos; los nombre de cada tabla y 
+           los nombres de cada columna de cada tabla.
+        '''
         self.metadata.reflect(self.engine)
         metadatos = {}
 
@@ -83,7 +98,13 @@ class LLMsToDataBase:
         return md_df
 
 
+    # extraer todos los metadatos de una base de datos
     def full_md_extraction_pipeline(self):
+        '''Función para extraer todos los metadatos de la base de datos: para cada tabla se extre el nombre de la
+           tabla, el nombre de cada columna, si esa columna es llave foranea o primaria, si acepta nulos o no, y 
+           el tipo de dato que almacena cada columna. Es más costosa a nivel de token que la extracción simple
+        '''
+
         self.metadata.reflect(self.engine)
         metadatos = {}
 
@@ -114,10 +135,11 @@ class LLMsToDataBase:
     
         return md_df
 
-
+    # guardamos los metadatos en formato pickle
     def store_metadata_df_to_pickle(self):
-        '''Esta función dada una base de datos almacena los metadatos en formato pickle en
-           diferentes niveles de profundidad'''
+        '''Esta función, dada una base de datos almacena los metadatos en formato pickle en
+           diferentes niveles de profundidad
+        '''
         names = [self.bbdd_name + '_simple_metadata.pickle', self.bbdd_name + '_full_metadata.pickle']
 
         for name in names:
@@ -143,9 +165,18 @@ class LLMsToDataBase:
 
     @staticmethod
     def search_most_similar_metadata(prompt:str, metadata, n_resultados:int= None, lim_tokens:int= None) -> pd.DataFrame: 
+        '''Dado un prompt del usuario primero se calcula el embedding del prompt y se mide la similitud del coseno 
+           en conparación a los metadatos correspondientes de cada columna de la base de datos, despues de ordenan 
+           de mayor similitud a menor, y finalmente se devuelven todos los metadatos que entren en el limite de 
+           tokens establecido y se devuelve un dataframe con los metadatos correspondientes.
+        '''
+        # se extrae el embedding de la pregunta del usuario
+        prompt_embedding = get_embedding(prompt)
 
-        prompt_embedding = get_embedding(prompt)                                                                # se extrae el embedding de la pregunta del usuario
-        metadata['similarity']= metadata['embedding'].apply(lambda x: cosine_similarity(x, prompt_embedding))   # se saca la similitud de la pregunta con las posibles respuestas
+        # se saca la similitud de la pregunta con las posibles respuestas
+        metadata['similarity']= metadata['embedding'].apply(lambda x: cosine_similarity(x, prompt_embedding))   
+
+        # las ordenamos de mas similar a menos
         metadata = metadata.sort_values('similarity', ascending= False)   
 
         if n_resultados == None:           n_resultados = len(metadata)
@@ -157,11 +188,9 @@ class LLMsToDataBase:
         if lim_tokens == None: return metadata_mas_similar
         else:                  return metadata_mas_similar[metadata_mas_similar['token_cumsum'] <= lim_tokens]
 
-
+    # recibe una consulta y mediante una plantilla especiífca gpt4 devuelve el código sql correspondiente
     @staticmethod
     def obtener_sql_de_la_consulta(consulta_nlp:str, metadatos_str:str) -> str:
-    
-        '''recibe una consulta y mediante una plantilla especiífca gpt4 devuelve el código sql correspondiente'''
 
         mi_prompt = [
             {'role': 'system', 
@@ -169,7 +198,7 @@ class LLMsToDataBase:
                                    AQUI TIENES LOS METADATOS DE LA BASE DE DATOS: \n{metadatos_str}\n. Para expresiones regulares utiliza \
                                    "~" en lugar de "REGEXP".'},      
             {'role': 'user',   'content': f'{consulta_nlp}'},
-            {'role': 'assistant', 'content': '```sql\nEL CODIGO SQL;\n```'}
+            {'role': 'assistant', 'content': 'DEVUELVES SOLO EL CODIGO SQL SIN NINGUN COMENTARIO EN ESTE FORMATO: ```sql\nEL CODIGO SQL;\n```'}
             ]
 
         respuesta_sql = enviar_promt_chat_completions_mode(
@@ -178,67 +207,8 @@ class LLMsToDataBase:
             aleatoriedad=0)
         
         return respuesta_sql
-
-
-    def nlp_to_sql(self, consulta_nlp:str, metadata_mode:str='simple', 
-                   n_tablas:int=None, metadata_token_limit:int=2000):
-        '''
-        Esta función recibe una consulta en lenguaje natural y la formatea a codigo SQL para 
-        luego devolver una tabla en formato texto y que la api de chat completions de openai 
-        pueda procesar esa tabla. PROPORCIONA INFO DE LOS METADATOS DE LA BBDD AL ASISTENTE
-        '''
         
-        try: 
-            simular_respuesta_generativa(f'\nVoy a asegurar que los metadatos de bbdd {self.bbdd_name} esten disponibles...\n\n')
-            self.store_metadata_df_to_pickle()
-
-            if metadata_mode == 'full':
-                metadata = pd.read_pickle(os.path.join(self.data_path, self.bbdd_name + '_full_metadata.pickle'))
-            else:
-                metadata = pd.read_pickle(os.path.join(self.data_path, self.bbdd_name + '_simple_metadata.pickle'))
-
-            # se compara el embedding del prompt con los embeddings de los metadatos de cada tabla de la base de datos
-            md_mas_similar = LLMsToDataBase.search_most_similar_metadata(
-                consulta_nlp, 
-                metadata, 
-                n_resultados= n_tablas, 
-                lim_tokens= metadata_token_limit)
-
-            # se pasan los metadatos a string
-            metadatos_str = LLMsToDataBase.get_string_from_metadata_df(md_mas_similar)
-
-            # se envia la consulta nlp al llm para que devuelva el código sql
-            respuesta_sql = LLMsToDataBase.obtener_sql_de_la_consulta(consulta_nlp= consulta_nlp, metadatos_str= metadatos_str)
-
-            # buscamos codigo sql en la respuesta del llm
-            regex_pattern = r"```sql\n(.*?;)\n```" 
-            coincidencia = re.search(regex_pattern, respuesta_sql, re.DOTALL)
-
-            # si regex encuentra codigo sql lo extrae
-            if coincidencia:
-                codigo_sql = coincidencia.group(1).strip()
-                simular_respuesta_generativa(f'\nEl codigo sql que se ejecutará para responder tu consulta:\n{codigo_sql}\n\n')
-                
-
-            # si regex no encuentra codigo sql levanta un error y devuelve la respuesta del llm
-            else: 
-                simular_respuesta_generativa(respuesta_sql)
-                raise KeyError('\n\n')
-            
-            
-
-            # leemos el codigo sql y lo pasamos a pandas dataframe, después pasamos el dataframe a texto
-            df = pd.read_sql(codigo_sql, self.engine)
-            df_text = df.to_markdown()
-
-            # cerrar la conexion de forma seura
-            # self.close_connection()                               
-            return df_text, codigo_sql
-        
-        except Exception as e: 
-            simular_respuesta_generativa(f"\nLa consulta dio el siguiente error: \n{e}")
-        
-
+    # generar un informe de los resultados de nuestra consulta
     @staticmethod
     def informe_resultado(consulta_usuario:str, codigo_sql:str, tabla_texto: str, max_tokens_respuesta:int= 1000)->str:
 
@@ -252,7 +222,6 @@ class LLMsToDataBase:
                                 Debes acotar tu respuesta a un maximo de {max_tokens_respuesta-50} o menos'
                                 }, 
             {'role': 'user',   'content': f'{consulta_usuario}'},
-            #{'role': 'assistant', 'content': 'Devuélveme SOLO EL CODIGO SQL y en este formato: \n```sql\nEL CODIGO SQL;\n```'}
             ]
 
         respuesta_sql = enviar_promt_chat_completions_mode(
@@ -264,15 +233,23 @@ class LLMsToDataBase:
      
 
 class SQLAgent(LLMsToDataBase):
+    '''Esta clase presenta las funcionalidades necesarias de la conversación con el LLM cuando le preguntemos sobre BBDD.
+       Esta clase hereda de la anterior y tiene funcionalidades extra como hacer la consulta y generar un informe continuar conversando, 
+       resolver dudas sobre una consulta anterior, intenta resolver los errores. Gestiona el histórico de la conversación internamente.
+    '''
 
+    # establecemos tools como variables de clase
     tools = [
     {
     "type": "function",
     "function": {
         "name": "continuar_conversacion",
-        "description": 'Extrae los argumentos booleanos "continuar" y "nueva_consulta".\
-         Si el usuario pregunta algo que no tiene nada que ver con el historico o hace una nueva consulta, el argumento "continuar" = False \
-         Si "continuar" es False entonces "nueva_consulta" también es false, si "continuar" es True entonces: \
+        "description": 'Extrae los argumentos booleanos "continuar" y "nueva_consulta".\n\
+         Si el usuario pregunta algo que no tiene nada que ver con posibles consultas a BBDDs, entonces continuar = "False"  \
+         Si el usuario hace una pregunta que no puedes responder con el historico o la información de la tabla, entonces \
+         "continuar"= "True", y "nueva_consulta" = "True". Si puedes responder a el prompt del usuario con la información del \
+         historico o la tabla entonces "continuar"= "True", y "nueva_consulta" = "False"\
+         Si "continuar" =  "False" entonces "nueva_consulta" = "False"\
          Debes diferenciar si el usuario quiere seguir converesando sobre la consulta anterior o tiene una nueva consulta',
         "parameters": {
             "type": "object",
@@ -287,10 +264,10 @@ class SQLAgent(LLMsToDataBase):
                             },
             },
             "required": ["continuar", "nueva_consulta"]
+                    }
                 }
             }
-        }
-    ]
+        ]
 
     def __init__(self, bbdd_name=None, user=None, password=None, host='localhost', port='5432', llm_to_database=None):
 
@@ -305,7 +282,9 @@ class SQLAgent(LLMsToDataBase):
             self.bbdd_name = llm_to_database.bbdd_name
             self.data_path = llm_to_database.data_path
         
-        self.historico = HistoricoConversacion()
+        # cada agente tendrá su historico guardado y se almacenará como atributo de instancia
+        self.historico_completo = HistoricoConversacion()  # incluye las tablas 
+        self.historico = HistoricoConversacion()           # solo incluye las respuestas en lenguaje natural y las consultas
 
 
     def nlp_to_sql(self, consulta_nlp:str, metadata_mode:str='simple', 
@@ -313,19 +292,20 @@ class SQLAgent(LLMsToDataBase):
         '''
         Esta función recibe una consulta en lenguaje natural y la formatea a codigo SQL para 
         luego devolver una tabla en formato texto y que la api de chat completions de openai 
-        pueda procesar esa tabla. PROPORCIONA INFO DE LOS METADATOS DE LA BBDD AL ASISTENTE
+        pueda procesar esa tabla. PROPORCIONA INFO DE LOS METADATOS DE LA BBDD AL AGENTE
         '''
 
         try: 
             # añadimos el primer mensaje 
             self.historico.actualizar_historico(mensaje=consulta_nlp, role= 'user')
+            self.historico_completo.actualizar_historico(mensaje=consulta_nlp, role= 'user')
 
             # solo en la primera consulta se va ha asegurar de que los metadatos esten almacenados correctamente
             if self.historico.contador_interacciones <= 1:
                 simular_respuesta_generativa(f'\nVoy a asegurar que los metadatos de bbdd {self.bbdd_name} esten disponibles...\n\n')
                 self.store_metadata_df_to_pickle()
 
-            if metadata_mode == 'full':
+            if metadata_mode.lower() == 'full':
                 metadata = pd.read_pickle(os.path.join(self.data_path, self.bbdd_name + '_full_metadata.pickle'))
             else:
                 metadata = pd.read_pickle(os.path.join(self.data_path, self.bbdd_name + '_simple_metadata.pickle'))
@@ -347,34 +327,45 @@ class SQLAgent(LLMsToDataBase):
             regex_pattern = r"```sql\n(.*?;)\n```" 
             coincidencia = re.search(regex_pattern, respuesta_sql, re.DOTALL)
 
+
             # si regex encuentra codigo sql lo extrae
             if coincidencia:
                 codigo_sql = coincidencia.group(1).strip()
-                self.historico.actualizar_historico(mensaje=codigo_sql, role= 'agent', tipo= 'codigo SQL')
-
-                simular_respuesta_generativa(f'\nAGENTE:\nEl codigo sql que se ejecutará para responder tu consulta:\n{codigo_sql}\n\n')
+                #print('codigo_sql')
+                self.historico_completo.actualizar_historico(mensaje=codigo_sql, role= 'agent', tipo= 'codigo SQL')
+                simular_respuesta_generativa(f'\nAGENTE:\nEl codigo sql que se ejecutará para responder tu consulta:\n\n{codigo_sql}\n\n')
                 
+                # intentamos ejecutar la consulta con pandas y pasamos la tabla a texto para darsela despues al llm
                 try: 
                     df = pd.read_sql(codigo_sql, self.engine)
                     df_text = df.to_markdown()
-                    self.historico.actualizar_historico(mensaje=df_text, role= 'agent', tipo= 'tabla')
+                    self.historico_completo.actualizar_historico(mensaje=df_text, role= 'agent', tipo= 'tabla')
                     return df_text, codigo_sql
                 
-                except Exception as e: 
-                    simular_respuesta_generativa(f'Con el 99.999999% de probabilidad se te ha olvidado levantar la base de datos, ESPABILA!!\n{e}')
-
+                # si se me olvida levantar la base de datos 
+                except psycopg2.OperationalError as e:
+                    simular_respuesta_generativa(f'\nAGENTE:\nCon el 99.999999% de probabilidad se te ha olvidado levantar la base de datos, ESPABILA!!\n{e}')
+                    return None, None
                 
-
+                # si el codigo ejecutado en try da error
+                except Exception as e:
+                    mensaje_error = f"Error al ejecutar el SQL:\n\n{e}\n\n"
+                    simular_respuesta_generativa(f'\nAGENTE\n:{mensaje_error}')
+                    self.historico_completo.actualizar_historico(mensaje=mensaje_error, role= 'agent', tipo= 'error')
+                    return mensaje_error, codigo_sql
+                
             # si regex no encuentra codigo, devuelve el mensaje del llm
             else: 
-                simular_respuesta_generativa(f'\nAGENTE:\nEl codigo sql que se ejecutará para responder tu consulta:\n{respuesta_sql}\n\n')
-                self.historico.actualizar_historico(mensaje=respuesta_sql, role= 'agent', tipo= 'respuesta')
-                return respuesta_sql, None
+                simular_respuesta_generativa(f'\nAGENTE:\nNo se encontro código SQL en la respuesta:\n\n{respuesta_sql}\n\n')
+                self.historico_completo.actualizar_historico(mensaje=respuesta_sql, role= 'agent', tipo= 'error')
+                return None, respuesta_sql
                 
         except Exception as e: 
-            simular_respuesta_generativa(f"\nLa consulta dio el siguiente error: \n{e}")
+            mensaje_error = f"\nAGENTE:\nLa consulta dio el siguiente error:\n\n{e}\n\n"
+            simular_respuesta_generativa(mensaje_error)
+            return None, mensaje_error
 
-       
+    # Generamos informe de nuestra consulta
     def informe_resultado(self, consulta_usuario:str, codigo_sql:str, tabla_texto: str, max_tokens_respuesta:int= 1000)->str:
 
         mi_prompt = [
@@ -387,26 +378,60 @@ class SQLAgent(LLMsToDataBase):
                                 Debes acotar tu respuesta a un maximo de {max_tokens_respuesta-50} o menos'
                                 }, 
             {'role': 'user',   'content': f'{consulta_usuario}'},
-            #{'role': 'assistant', 'content': 'Devuélveme SOLO EL CODIGO SQL y en este formato: \n```sql\nEL CODIGO SQL;\n```'}
             ]
 
         respuesta_sobre_sql = enviar_promt_chat_completions_mode(
             mensaje=mi_prompt, 
-            probabilidad_acumulada=0.8, 
-            aleatoriedad=0.2)
+            probabilidad_acumulada=1, 
+            aleatoriedad=0.5)
         
-        self.historico.actualizar_historico(mensaje=respuesta_sobre_sql, role= 'agent', tipo= 'respuesta')
+        self.historico.actualizar_historico(mensaje=respuesta_sobre_sql, role= 'agent', tipo= 'respuesta_informe')
+        self.historico_completo.actualizar_historico(mensaje=respuesta_sobre_sql, role= 'agent', tipo= 'respuesta_informe')
+        self.historico_completo.guardar_consulta_estructurada(
+            usuario= consulta_usuario, 
+            codigo_sql=codigo_sql, 
+            tabla= tabla_texto, 
+            respuesta_llm=respuesta_sobre_sql
+        )
 
         return respuesta_sobre_sql
 
 
-    def continuar_conversando(self, usuario, historico, tabla_consulta_anterior = None):
+    # intentar resolver el error en la consulta 
+    def resolver_error_SQL(consulta_nlp:str, mensaje_error:str, metadatos_str:str): 
+        '''Esta función recibe la consulta previa y el error que ha dado al ejecutar el codigo extraido, normalmente los errores
+           seran por parte de la ejecución del codigo SQL, producidos errores de compatibilidad con postgreSQL y/o alchemySQL
+        '''
+        
+        mi_prompt = [
+            {'role': 'system', 
+                      'content': f'Eres un asistente experto en bases de datos, que convierte peticiones de lenguaje natural a código SQL.\
+                                   Se te ha hecho una consulta previamente y ha dado el siguiente error \n{mensaje_error}\nTu debér es intentar \
+                                   dar un codigo SQL que resuelva el error. DEBES DEVOLVER UN NUEVO CÓDIGO SQL, QUE NO DÉ ERROR. \
+                                   AQUI TIENES LOS METADATOS DE LA BASE DE DATOS: \n{metadatos_str}\n. Para expresiones regulares utiliza \
+                                   "~" en lugar de "REGEXP".'},      
+            {'role': 'user',   'content': f'{consulta_nlp}'},
+            {'role': 'assistant', 'content': '```sql\nEL CODIGO SQL;\n```'}
+            ]
+
+        nueva_respuesta_sql = enviar_promt_chat_completions_mode(
+            mensaje=mi_prompt, 
+            probabilidad_acumulada=1, 
+            aleatoriedad=0)
+        
+        return nueva_respuesta_sql
+
+
+    # decidimos si el usuario quiere continuar conversando
+    def continuar_conversando(self, usuario, codigo_sql_ejecutado:str, tabla_consulta_anterior = None, 
+                              max_tokens_historico:int= 1000):
         '''Clasifica el prompt del usuario de dos maneras: 
             1.- Si este quiere seguir conversando 'continuar' = True o False.
             2.- Si se trata de una nueva consulta o si es una consulta anterior 'nueva_consulta' = True o False'''
         
-        self.historico.actualizar_historico(mensaje= usuario, role= 'user')
-            
+        # creamos la ventana de historico
+        ultimo_historico = self.historico.ventana_historico(max_tokens= max_tokens_historico)
+        
         # si NO se ha proporcionado una tabla sobre los resultados
         if tabla_consulta_anterior == None:
             prompt_para_extraer_argumentos = [
@@ -415,7 +440,9 @@ class SQLAgent(LLMsToDataBase):
                         'content': f'Tu objetivo es extraer los argumentos ("continuar" y "nueva_consulta") para\
                         ejecutar la función que te he pasado en tools. Primero debes diferenciar si el usuario quiere\
                         seguir conversando o no: True o False. Segundo debes diferenciar si el usuario tiene una nueva \
-                        consulta o no: True o False, sobre la consulta anterior. Para ello aqui tienes el historico \n{historico}'},
+                        consulta o no: True o False, sobre la consulta anterior. Para ello aqui tienes el historico \n{ultimo_historico} \
+                        y aqui el codigo SQL que se ha ejecutado en la consulta anterior\n{codigo_sql_ejecutado}'
+                        },
 
                 {'role': 'user', 'content': f'{usuario}'} ]
 
@@ -432,9 +459,10 @@ class SQLAgent(LLMsToDataBase):
                 {'role': 'system', 
                         'content': f'Tu objetivo es extraer los argumentos ("continuar" y "nueva_consulta") para\
                         ejecutar la función que te he pasado en tools. Primero debes diferenciar si el usuario quiere\
-                        seguir conversando o no: True o False. Segundo debes diferenciar si el usuario tiene una nueva \
-                        consulta o no: True o False, sobre la consulta anterior. Para ello aqui tienes el historico \n{historico}\n \
-                        y la tabla de la consulta \n{tabla_consulta_anterior}\n'},
+                        seguir conversando o NO sobre la BBDD: True o False. Segundo debes diferenciar si el usuario tiene una nueva \
+                        consulta o no: True o False, sobre la consulta anterior. Para ello aqui tienes el historico \n{ultimo_historico}\n \
+                        de la conversación, y la tabla correspondiente al codigo de la consulta:\n{tabla_consulta_anterior}\n\
+                        La tabla viene dada por el siguiente codigo SQL:\n{codigo_sql_ejecutado}\n' },
 
                 {'role': 'user', 'content': f'{usuario}'}]
 
@@ -447,19 +475,28 @@ class SQLAgent(LLMsToDataBase):
 
         return argumentos_extraidos_del_llm['continuar'], argumentos_extraidos_del_llm['nueva_consulta']
 
-
+    # resolvemos duda sobre consulta anterior
     def pregunta_sobre_consulta_anterior(self, 
-        usuario:str, ultimo_historico:str, tabla_consulta_anterior:str= None, max_tokens_respuesta:int= 1000):
+        usuario:str, tabla_consulta_anterior:str= None, consulta_sql_anterior:str= None,
+        max_tokens_historico:int= 1000, max_tokens_respuesta:int= 1000):
 
-        '''Recibe una pregunta del usuario sobre una respuesta anterior del sistema y el agente devuelve una respuesta teniendo \
-        acceso al historico y a la los datos de lectura, descripción y predicciones'''
+        '''
+        Recibe una pregunta del usuario sobre una respuesta anterior del sistema y el agente devuelve una respuesta teniendo \
+        acceso al historico y a la los datos de lectura, descripción y predicciones
+        '''
+
+        ultimo_historico = self.historico.ventana_historico(max_tokens= max_tokens_historico)
+
+        # actualizamos el historico con la duda del usuario sobre la consulta anterior
+        self.historico.actualizar_historico(mensaje= usuario, role= 'user')
+        self.historico_completo.actualizar_historico(mensaje= usuario, role= 'user')
 
         # si no se ha proporcionado la tabla de la consulta anterior
         if tabla_consulta_anterior== None: 
             prompt_conversacion = [
                 {'role': 'system', 
                 'content': f'Eres un asistente que responde de manera breve pero precisa sobre consultas a bases de datos previas. Para ello, \
-                            el historico de la conversación:\n{ultimo_historico}\n\
+                            el codigo SQL de la consulta anterior:\n{consulta_sql_anterior}\n el historico de la conversación:\n{ultimo_historico}\n\
                             Tu respuesta debe ser como maximo de {max_tokens_respuesta-100} tokens o menos'}, 
                                             
                 {'role': 'user', 
@@ -478,6 +515,7 @@ class SQLAgent(LLMsToDataBase):
             prompt_conversacion = [
                 {'role': 'system', 
                 'content': f'Eres un asistente que responde de manera breve pero precisa sobre consultas a bases de datos previas. Para ello, \
+                            El codigo SQL de la consulta anterior:\n{consulta_sql_anterior}\n \
                             el historico de la conversación:\n{ultimo_historico}\n y la tabla de la consulta anterior \n{tabla_consulta_anterior}\n.\
                             Tu respuesta debe ser como maximo de {max_tokens_respuesta-100} tokens o menos'}, 
                                             
@@ -492,6 +530,15 @@ class SQLAgent(LLMsToDataBase):
                         aleatoriedad=0.2, 
                         probabilidad_acumulada=0.8
                         )
-        self.historico.actualizar_historico(mensaje=respuesta_consulta_anterior, role= 'agent', tipo= 'respuesta')
+        
+        # actualizamos el historico con la respuesta del llm sobre la consutla anterior
+        self.historico.actualizar_historico(mensaje=respuesta_consulta_anterior, role= 'agent', tipo= 'respuesta_duda')
+        self.historico_completo.actualizar_historico(mensaje=respuesta_consulta_anterior, role= 'agent', tipo= 'respuesta_duda')
+        self.historico_completo.guardar_consulta_estructurada(
+            usuario= usuario, 
+            tabla= tabla_consulta_anterior, 
+            respuesta_llm=respuesta_consulta_anterior, 
+            codigo_sql=consulta_sql_anterior
+        )
 
         return respuesta_consulta_anterior

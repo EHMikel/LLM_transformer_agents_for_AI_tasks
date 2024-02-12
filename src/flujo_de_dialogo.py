@@ -3,12 +3,10 @@ from open_ai_utils import enviar_promt_chat_completions_mode
 
 class HistoricoConversacion:
 
-    contador_interacciones = 0   # variable de clase 
-
     def __init__(self): 
-        self.historico = ''               # variable del historico en si
-        self.contador_interacciones= 1    # el contador de las interacciones entre el agente y el usuario
-
+        self.historico = ''                   # variable del historico en si
+        self.contador_interacciones= 0        # el contador de las interacciones entre el agente y el usuario
+        self.info_consultas_estructurada = {} # guardaremos los datos en un diccionario de listas
 
     def actualizar_historico(self, mensaje:str, role:str= 'agent', tipo:str= 'respuesta'): 
         '''Recibe el historico anterior y la nueva interaccion entre el usuario y el agente, y actualiza el historico. \
@@ -17,16 +15,25 @@ class HistoricoConversacion:
         if role.lower() == 'usuario' or role.lower() == 'user':
             self.contador_interacciones+= 1
             self.historico += f'prompt_{self.contador_interacciones} USUARIO:\n{mensaje}\n\n'
-
+            
         else:
-    
             self.historico += f'{tipo}_{self.contador_interacciones} AGENTE:\n{mensaje}\n\n'
 
-    
 
-    def ventana_ultimo_historico(self, max_tokens:int= 1000)->str:
+    def guardar_consulta_estructurada(self, usuario:str, tabla:str= None, respuesta_llm:str= None, codigo_sql:str= None):
+        '''Este metodo guarda todos los datos de la consulta en un diccionario de listas. 
+           Luego me puede dar mucha flexibilidad para extraer información o incluso pasarlo a dataframe.
+           Incluso podría calcular los embeddings
+        '''
+        consulta = [usuario, tabla, respuesta_llm, codigo_sql]
+        # self.info_consultas_estructurada['consulta_'+str(self.contador_interacciones)] = consulta
+        self.info_consultas_estructurada[self.contador_interacciones] = consulta
+
+
+    def ventana_historico(self, max_tokens:int= 1000)->str:
         """
-        Procesa el histórico de la conversación y acumula mensajes hasta alcanzar un límite de tokens, para devolver una ventana de historico
+        Procesa el histórico de la conversación y acumula mensajes hasta alcanzar un límite de tokens, 
+        para devolver una ventana de historico.
         """
         # Separar el histórico en palabras.
         palabras = self.historico.split(' ')[::-1]        # guardamos el historico de más reciente a más antiguo en una lista 
