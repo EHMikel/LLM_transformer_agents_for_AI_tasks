@@ -18,18 +18,17 @@ def guardar_modelo(modelo, name:str, ruta_modelo:str):
         return True
 
 
-def cargar_modelo(name, ruta_modelo): 
-    '''Esta funciónn carga un modelo, pero primero comprueba si existe el modelo'''
+def cargar_modelo(name:str, ruta_modelo:str): 
 
     ruta_completa = os.path.join(ruta_modelo, name)
-
-    if not os.path.exists(ruta_completa):
-        print(f"El archivo '{name}' no existe en el directorio '{ruta_modelo}'. No se pudo cargar el modelo.")
+    
+    if os.path.exists(ruta_completa):
+        modelo = joblib.load(ruta_completa)
+        print(f"Modelo cargado con éxito desde {ruta_completa}")
+        return modelo
+    else:
+        print(f'El archivo {name} no existe en el directorio {ruta_modelo}.')
         return None
-
-    modelo = joblib.load(ruta_completa)
-    print(f"Modelo cargado con éxito desde '{ruta_completa}'")
-    return modelo
 
 
 def guardar_datos_procesados(data, name:str, ruta_datos:str): 

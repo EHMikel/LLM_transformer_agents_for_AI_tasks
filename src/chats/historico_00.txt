@@ -1,0 +1,352 @@
+prompt_1 USUARIO:
+como esta estructurada la base de datos, dame una idea básica
+
+error_1 AGENTE:
+```sql
+-- Tabla de clientes
+CREATE TABLE customer (
+    customer_id SERIAL PRIMARY KEY,
+    store_id INT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100),
+    address_id INT,
+    activebool BOOLEAN,
+    create_date DATE,
+    last_update TIMESTAMP,
+    active INT
+);
+
+-- Tabla de alquileres
+CREATE TABLE rental (
+    rental_id SERIAL PRIMARY KEY,
+    rental_date TIMESTAMP,
+    inventory_id INT,
+    customer_id INT,
+    return_date TIMESTAMP,
+    staff_id INT,
+    last_update TIMESTAMP
+);
+
+-- Tabla de películas
+CREATE TABLE film (
+    film_id SERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    description TEXT,
+    release_year YEAR,
+    language_id INT,
+    rental_duration INT,
+    rental_rate DECIMAL(4, 2),
+    length INT,
+    replacement_cost DECIMAL(5, 2),
+    rating VARCHAR(5),
+    last_update TIMESTAMP,
+    special_features VARCHAR(255),
+    fulltext TEXT
+);
+
+-- Tabla de personal
+CREATE TABLE staff (
+    staff_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(45),
+    last_name VARCHAR(45),
+    address_id INT,
+    email VARCHAR(100),
+    store_id INT,
+    active BOOLEAN,
+    username VARCHAR(16),
+    password VARCHAR(40),
+    last_update TIMESTAMP,
+    picture BYTEA
+);
+
+-- Tabla de categorías
+CREATE TABLE category (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(25),
+    last_update TIMESTAMP
+);
+
+-- Tabla de ciudades
+CREATE TABLE city (
+    city_id SERIAL PRIMARY KEY,
+    city VARCHAR(50),
+    country_id INT,
+    last_update TIMESTAMP
+);
+
+-- Tabla de tiendas
+CREATE TABLE store (
+    store_id SERIAL PRIMARY KEY,
+    manager_staff_id INT,
+    address_id INT,
+    last_update TIMESTAMP
+);
+
+-- Tabla de inventario
+CREATE TABLE inventory (
+    inventory_id SERIAL PRIMARY KEY,
+    film_id INT,
+    store_id INT,
+    last_update TIMESTAMP
+);
+
+-- Tabla de países
+CREATE TABLE country (
+    country_id SERIAL PRIMARY KEY,
+    country VARCHAR(50),
+    last_update TIMESTAMP
+);
+
+-- Tabla de idiomas
+CREATE TABLE language (
+    language_id SERIAL PRIMARY KEY,
+    name VARCHAR(20),
+    last_update TIMESTAMP
+);
+
+-- Tabla de categorías de películas
+CREATE TABLE film_category (
+    film_id INT
+
+respuesta_informe_1 AGENTE:
+La base de datos está estructurada en torno a una tienda de alquiler de películas y contiene varias tablas que se relacionan entre sí para organizar y gestionar la información sobre clientes, alquileres, películas, personal, categorías, ciudades, tiendas, inventario, países e idiomas. A continuación, se ofrece una descripción básica de cada tabla y cómo podrían estar relacionadas:
+
+1. **customer (clientes)**: Contiene información sobre los clientes, incluyendo un identificador único, el nombre, el apellido, el correo electrónico, un indicador de si están activos y la fecha de creación de su registro. Se relaciona con la tabla de alquileres y la tienda a través de `store_id`.
+
+2. **rental (alquileres)**: Almacena los registros de alquiler de películas, con un identificador único de alquiler, la fecha de alquiler, la fecha de devolución, el cliente y el empleado que realizó la transacción. Se conecta con las tablas de clientes, inventario y personal.
+
+3. **film (películas)**: Contiene detalles de las películas, como el título, la descripción, el año de lanzamiento, la duración del alquiler, la tarifa de alquiler, la longitud, el costo de reemplazo y la clasificación. Se vincula con la tabla de inventario y categorías de películas.
+
+4. **staff (personal)**: Incluye información sobre los empleados de la tienda, como nombres, correo electrónico, nombre de usuario y contraseña. Se relaciona con las tablas de alquileres y tiendas.
+
+5. **category (categorías)**: Lista las diferentes categorías de películas disponibles, como acción, comedia, drama, etc.
+
+6. **city (ciudades)**: Registra las ciudades donde se encuentran los clientes y las tiendas, y se relaciona con la tabla de países.
+
+7. **store (tiendas)**: Mantiene información sobre las tiendas, incluyendo un identificador de tienda y el personal que la gestiona. Se relaciona con las tablas de clientes, personal e inventario.
+
+8. **inventory (inventario)**: Registra las existencias de películas
+
+prompt_2 USUARIO:
+dame los actores actores y actrizes que hayan participado en en peliculas superiores a 181 minutos cuyo apellido empieze por una vocal, incluye la pelicula y la duracion
+
+codigo SQL_2 AGENTE:
+SELECT a.actor_id, a.first_name, a.last_name, f.title, f.length
+FROM actor a
+JOIN film_actor fa ON a.actor_id = fa.actor_id
+JOIN film f ON fa.film_id = f.film_id
+WHERE f.length > 181 AND a.last_name ~ '^[AEIOU]';
+
+tabla_2 AGENTE:
+|    |   actor_id | first_name   | last_name   | title              |   length |
+|---:|-----------:|:-------------|:------------|:-------------------|---------:|
+|  0 |         15 | Cuba         | Olivier     | Soldiers Evolution |      185 |
+|  1 |         15 | Cuba         | Olivier     | Theory Mermaid     |      184 |
+|  2 |         34 | Audrey       | Olivier     | Control Anthem     |      185 |
+|  3 |         58 | Christian    | Akroyd      | Catch Amistad      |      183 |
+|  4 |         58 | Christian    | Akroyd      | Home Pity          |      185 |
+|  5 |         76 | Angelina     | Astaire     | Saturn Name        |      182 |
+|  6 |         92 | Kirsten      | Akroyd      | Worst Banger       |      185 |
+|  7 |        118 | Cuba         | Allen       | Chicago North      |      185 |
+|  8 |        118 | Cuba         | Allen       | King Evolution     |      184 |
+|  9 |        194 | Meryl        | Allen       | Records Zorro      |      182 |
+| 10 |        194 | Meryl        | Allen       | Sweet Brotherhood  |      185 |
+
+respuesta_informe_2 AGENTE:
+El informe sobre actores y actrices que han participado en películas de más de 181 minutos, cuyos apellidos comienzan con una vocal, es el siguiente:
+
+1. Actor: Cuba Olivier
+   - Películas:
+     - "Soldiers Evolution" (185 minutos)
+     - "Theory Mermaid" (184 minutos)
+
+2. Actor: Audrey Olivier
+   - Películas:
+     - "Control Anthem" (185 minutos)
+
+3. Actor: Christian Akroyd
+   - Películas:
+     - "Catch Amistad" (183 minutos)
+     - "Home Pity" (185 minutos)
+
+4. Actriz: Angelina Astaire
+   - Películas:
+     - "Saturn Name" (182 minutos)
+
+5. Actriz: Kirsten Akroyd
+   - Películas:
+     - "Worst Banger" (185 minutos)
+
+6. Actor: Cuba Allen
+   - Películas:
+     - "Chicago North" (185 minutos)
+     - "King Evolution" (184 minutos)
+
+7. Actriz: Meryl Allen
+   - Películas:
+     - "Records Zorro" (182 minutos)
+     - "Sweet Brotherhood" (185 minutos)
+
+Este informe resume los datos de 7 actores y actrices que cumplen con los criterios especificados, junto con las películas en las que participaron y la duración de cada una.
+
+prompt_3 USUARIO:
+como estan categorizadas las peliculas? hay un patron en el precio por categoria? 
+
+codigo SQL_3 AGENTE:
+SELECT c.name AS category_name, AVG(f.rental_rate) AS average_price
+FROM category c
+JOIN film_category fc ON c.category_id = fc.category_id
+JOIN film f ON fc.film_id = f.film_id
+GROUP BY c.name
+ORDER BY c.name;
+
+tabla_3 AGENTE:
+|    | category_name   |   average_price |
+|---:|:----------------|----------------:|
+|  0 | Action          |         2.64625 |
+|  1 | Animation       |         2.80818 |
+|  2 | Children        |         2.89    |
+|  3 | Classics        |         2.74439 |
+|  4 | Comedy          |         3.16241 |
+|  5 | Documentary     |         2.66647 |
+|  6 | Drama           |         3.02226 |
+|  7 | Family          |         2.75812 |
+|  8 | Foreign         |         3.09959 |
+|  9 | Games           |         3.2523  |
+| 10 | Horror          |         3.02571 |
+| 11 | Music           |         2.95078 |
+| 12 | New             |         3.11698 |
+| 13 | Sci-Fi          |         3.21951 |
+| 14 | Sports          |         3.12514 |
+| 15 | Travel          |         3.23561 |
+
+respuesta_informe_3 AGENTE:
+Las películas están categorizadas en 16 géneros distintos, según el informe generado por la consulta SQL. Estos géneros son: Action, Animation, Children, Classics, Comedy, Documentary, Drama, Family, Foreign, Games, Horror, Music, New, Sci-Fi, Sports y Travel.
+
+En cuanto a los precios promedio de alquiler por categoría, los datos muestran cierta variabilidad. El género con el precio promedio de alquiler más bajo es "Action" con $2.64625, mientras que el género con el precio promedio más alto es "Travel" con $3.23561. De manera general, los precios promedio de alquiler oscilan entre aproximadamente $2.65 y $3.24.
+
+No hay un patrón claro y definido que relacione el género de la película con su precio promedio de alquiler; sin embargo, se puede observar que los géneros "Comedy", "Drama", "Foreign", "Games", "Horror", "New", "Sci-Fi", "Sports" y "Travel" tienen precios promedio superiores a $3.00, lo que podría indicar una tendencia a que ciertos géneros tengan precios ligeramente más altos. Por otro lado, géneros como "Action", "Animation", "Children", "Classics", "Documentary", "Family" y "Music" presentan precios promedio por debajo de los $3.00.
+
+En resumen, las películas están categorizadas por género y los precios promedio de alquiler varían por categoría, con algunos géneros teniendo precios ligeramente más altos, aunque no se aprecia un patrón consistente que dicte esta variación de precios.
+
+prompt_4 USUARIO:
+dame las 5 peliculas que más tiempo estivieron alquladas
+
+codigo SQL_4 AGENTE:
+SELECT f.title, SUM(TIMESTAMPDIFF(SECOND, r.rental_date, r.return_date)) AS total_rental_seconds
+FROM film f
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+GROUP BY f.film_id
+ORDER BY total_rental_seconds DESC
+LIMIT 5;
+
+error_4 AGENTE:
+
+AGENTE:
+Error al ejecutar el SQL:
+
+(psycopg2.errors.UndefinedColumn) column "second" does not exist
+LINE 1: SELECT f.title, SUM(TIMESTAMPDIFF(SECOND, r.rental_date, r.r...
+                                          ^
+
+[SQL: SELECT f.title, SUM(TIMESTAMPDIFF(SECOND, r.rental_date, r.return_date)) AS total_rental_seconds
+FROM film f
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+GROUP BY f.film_id
+ORDER BY total_rental_seconds DESC
+LIMIT 5;]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+
+
+codigo SQL_4 AGENTE:
+SELECT f.title, SUM(EXTRACT(EPOCH FROM (r.return_date - r.rental_date))) AS total_rental_seconds
+FROM film f
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+GROUP BY f.title
+ORDER BY total_rental_seconds DESC
+LIMIT 5;
+
+tabla_4 AGENTE:
+|    | title               |   total_rental_seconds |
+|---:|:--------------------|-----------------------:|
+|  0 | Ridgemont Submarine |            1.60996e+07 |
+|  1 | Gleaming Jawbreaker |            1.55786e+07 |
+|  2 | Timberland Sky      |            1.55651e+07 |
+|  3 | Forward Temple      |            1.54697e+07 |
+|  4 | Butterfly Chocolat  |            1.53736e+07 |
+
+respuesta_informe_4 AGENTE:
+Las cinco películas con el mayor tiempo total de alquiler, según la base de datos consultada, son las siguientes:
+
+1. "Ridgemont Submarine" con un total de 16,099,600 segundos de alquiler.
+2. "Gleaming Jawbreaker" con un total de 15,578,600 segundos de alquiler.
+3. "Timberland Sky" con un total de 15,565,100 segundos de alquiler.
+4. "Forward Temple" con un total de 15,469,700 segundos de alquiler.
+5. "Butterfly Chocolat" con un total de 15,373,600 segundos de alquiler.
+
+Estas cifras reflejan la suma de todos los períodos de alquiler de cada película, lo que indica su popularidad y demanda entre los clientes.
+
+prompt_5 USUARIO:
+tienen las peliculas algun tipo de rating? 
+
+codigo SQL_5 AGENTE:
+SELECT DISTINCT rating FROM film;
+
+tabla_5 AGENTE:
+|    | rating   |
+|---:|:---------|
+|  0 | G        |
+|  1 | PG-13    |
+|  2 | PG       |
+|  3 | R        |
+|  4 | NC-17    |
+
+respuesta_informe_5 AGENTE:
+Sí, las películas en la base de datos consultada tienen asignados distintos niveles de clasificación o rating. La consulta realizada muestra que existen cinco categorías de clasificación distintas para las películas en la base de datos. Estas categorías son:
+
+1. G (General Audiences) – Apto para todos los públicos.
+2. PG (Parental Guidance Suggested) – Se sugiere la guía de un adulto para niños menores de edad.
+3. PG-13 (Parents Strongly Cautioned) – Se advierte a los padres que el contenido puede ser inapropiado para niños menores de 13 años.
+4. R (Restricted) – Restringido a menores de 17 años a menos que estén acompañados por un adulto.
+5. NC-17 (Adults Only) – Solo para adultos, no apto para menores de 17 años.
+
+Cada una de estas clasificaciones indica el tipo de contenido que puede esperarse en la película y la audiencia a la que está dirigida, proporcionando una guía para los espectadores y los padres sobre la idoneidad del contenido para diferentes edades.
+
+prompt_6 USUARIO:
+cuantos actores hay ? 
+
+codigo SQL_6 AGENTE:
+SELECT COUNT(*) FROM actor;
+
+tabla_6 AGENTE:
+|    |   count |
+|---:|--------:|
+|  0 |     200 |
+
+respuesta_informe_6 AGENTE:
+La consulta a la base de datos indica que hay un total de 200 actores registrados.
+
+prompt_7 USUARIO:
+cual es el actore que ha particiopado en más peliculas? 
+
+codigo SQL_7 AGENTE:
+SELECT actor.actor_id, actor.first_name, actor.last_name, COUNT(film_actor.film_id) AS film_count
+FROM actor
+JOIN film_actor ON actor.actor_id = film_actor.actor_id
+GROUP BY actor.actor_id
+ORDER BY film_count DESC
+LIMIT 1;
+
+tabla_7 AGENTE:
+|    |   actor_id | first_name   | last_name   |   film_count |
+|---:|-----------:|:-------------|:------------|-------------:|
+|  0 |        107 | Gina         | Degeneres   |           42 |
+
+respuesta_informe_7 AGENTE:
+El actor que ha participado en más películas según la consulta realizada es Gina Degeneres, con un total de 42 películas.
+

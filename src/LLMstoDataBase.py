@@ -286,6 +286,51 @@ class SQLAgent(LLMsToDataBase):
         self.historico_completo = HistoricoConversacion()  # incluye las tablas 
         self.historico = HistoricoConversacion()           # solo incluye las respuestas en lenguaje natural y las consultas
 
+    # es un metodo interno que extrae el codigo sql y lo devuelve junnto con la tabla
+    def _extract_sql_and_data(self,respuesta_sql:str):
+
+        # buscamos codigo sql en la respuesta del llm
+        regex_pattern = r"```sql\n(.*?;)\n```" 
+        coincidencia = re.search(regex_pattern, respuesta_sql, re.DOTALL)
+
+
+                # si regex encuentra codigo sql lo extrae
+        if coincidencia:
+            codigo_sql = coincidencia.group(1).strip()
+            #print('codigo_sql')
+            self.historico_completo.actualizar_historico(mensaje=codigo_sql, role= 'agent', tipo= 'codigo SQL')
+            simular_respuesta_generativa(f'\nAGENTE:\nEl codigo sql que se ejecutará para responder tu consulta:\n\n{codigo_sql}\n\n')
+                    
+                # intentamos ejecutar la consulta con pandas y pasamos la tabla a texto para darsela despues al llm
+            try: 
+                df = pd.read_sql(codigo_sql, self.engine)
+                df_text = df.to_markdown()
+                self.historico_completo.actualizar_historico(mensaje=df_text, role= 'agent', tipo= 'tabla')
+                error = None
+                return df_text, codigo_sql, error
+                    
+                # si se me olvida levantar la base de datos 
+            except psycopg2.OperationalError as e:
+                mensaje_error= f'\nAGENTE:\nCon el 99.999999% de probabilidad se te ha olvidado levantar la base de datos, ESPABILA!!\n{e}'
+                simular_respuesta_generativa(mensaje_error)
+                error = 'BBDD'
+                return None, None, error
+                    
+                    # si el codigo ejecutado en try da error
+            except Exception as e:
+                mensaje_error = f"\nAGENTE:\nError al ejecutar el SQL:\n\n{e}\n\n"
+                simular_respuesta_generativa(f'\nAGENTE\n:{mensaje_error}')
+                self.historico_completo.actualizar_historico(mensaje=mensaje_error, role= 'agent', tipo= 'error')
+                error = 'SQL'
+                return mensaje_error, codigo_sql, error
+                    
+                # si regex no encuentra codigo, devuelve el mensaje del llm
+        else: 
+            simular_respuesta_generativa(f'\nAGENTE:\nNo se encontro código SQL en la respuesta:\n\n{respuesta_sql}\n\n')
+            self.historico_completo.actualizar_historico(mensaje=respuesta_sql, role= 'agent', tipo= 'error')
+            error = 'REGEX'
+            return None, respuesta_sql, error
+
 
     def nlp_to_sql(self, consulta_nlp:str, metadata_mode:str='simple', 
                     n_tablas:int=None, metadata_token_limit:int=2000):
@@ -319,51 +364,22 @@ class SQLAgent(LLMsToDataBase):
 
             # se pasan los metadatos a string
             metadatos_str = SQLAgent.get_string_from_metadata_df(md_mas_similar)
+            self.metadata_str = metadatos_str
 
             # se envia la consulta nlp al llm para que devuelva el código sql
             respuesta_sql = SQLAgent.obtener_sql_de_la_consulta(consulta_nlp= consulta_nlp, metadatos_str= metadatos_str)
 
-            # buscamos codigo sql en la respuesta del llm
-            regex_pattern = r"```sql\n(.*?;)\n```" 
-            coincidencia = re.search(regex_pattern, respuesta_sql, re.DOTALL)
+            # extrae el codigo sql de la respuesta y se pasa a tabla, tambien se gestionan los errores
+            mensaje_o_tabla, codigo_sql, error = self._extract_sql_and_data(respuesta_sql=respuesta_sql)
+            
+            return mensaje_o_tabla, codigo_sql, error
 
-
-            # si regex encuentra codigo sql lo extrae
-            if coincidencia:
-                codigo_sql = coincidencia.group(1).strip()
-                #print('codigo_sql')
-                self.historico_completo.actualizar_historico(mensaje=codigo_sql, role= 'agent', tipo= 'codigo SQL')
-                simular_respuesta_generativa(f'\nAGENTE:\nEl codigo sql que se ejecutará para responder tu consulta:\n\n{codigo_sql}\n\n')
-                
-                # intentamos ejecutar la consulta con pandas y pasamos la tabla a texto para darsela despues al llm
-                try: 
-                    df = pd.read_sql(codigo_sql, self.engine)
-                    df_text = df.to_markdown()
-                    self.historico_completo.actualizar_historico(mensaje=df_text, role= 'agent', tipo= 'tabla')
-                    return df_text, codigo_sql
-                
-                # si se me olvida levantar la base de datos 
-                except psycopg2.OperationalError as e:
-                    simular_respuesta_generativa(f'\nAGENTE:\nCon el 99.999999% de probabilidad se te ha olvidado levantar la base de datos, ESPABILA!!\n{e}')
-                    return None, None
-                
-                # si el codigo ejecutado en try da error
-                except Exception as e:
-                    mensaje_error = f"Error al ejecutar el SQL:\n\n{e}\n\n"
-                    simular_respuesta_generativa(f'\nAGENTE\n:{mensaje_error}')
-                    self.historico_completo.actualizar_historico(mensaje=mensaje_error, role= 'agent', tipo= 'error')
-                    return mensaje_error, codigo_sql
-                
-            # si regex no encuentra codigo, devuelve el mensaje del llm
-            else: 
-                simular_respuesta_generativa(f'\nAGENTE:\nNo se encontro código SQL en la respuesta:\n\n{respuesta_sql}\n\n')
-                self.historico_completo.actualizar_historico(mensaje=respuesta_sql, role= 'agent', tipo= 'error')
-                return None, respuesta_sql
                 
         except Exception as e: 
             mensaje_error = f"\nAGENTE:\nLa consulta dio el siguiente error:\n\n{e}\n\n"
             simular_respuesta_generativa(mensaje_error)
-            return None, mensaje_error
+            error = 'OTHER'
+            return None, mensaje_error, error
 
     # Generamos informe de nuestra consulta
     def informe_resultado(self, consulta_usuario:str, codigo_sql:str, tabla_texto: str, max_tokens_respuesta:int= 1000)->str:
@@ -398,7 +414,7 @@ class SQLAgent(LLMsToDataBase):
 
 
     # intentar resolver el error en la consulta 
-    def resolver_error_SQL(consulta_nlp:str, mensaje_error:str, metadatos_str:str): 
+    def resolver_error_SQL(self, consulta_nlp:str, codigo_sql_conflictivo:str, mensaje_error:str): 
         '''Esta función recibe la consulta previa y el error que ha dado al ejecutar el codigo extraido, normalmente los errores
            seran por parte de la ejecución del codigo SQL, producidos errores de compatibilidad con postgreSQL y/o alchemySQL
         '''
@@ -406,12 +422,12 @@ class SQLAgent(LLMsToDataBase):
         mi_prompt = [
             {'role': 'system', 
                       'content': f'Eres un asistente experto en bases de datos, que convierte peticiones de lenguaje natural a código SQL.\
-                                   Se te ha hecho una consulta previamente y ha dado el siguiente error \n{mensaje_error}\nTu debér es intentar \
-                                   dar un codigo SQL que resuelva el error. DEBES DEVOLVER UN NUEVO CÓDIGO SQL, QUE NO DÉ ERROR. \
-                                   AQUI TIENES LOS METADATOS DE LA BASE DE DATOS: \n{metadatos_str}\n. Para expresiones regulares utiliza \
+                                   Se te ha hecho una consulta previamente y ha dado el siguiente error \n{mensaje_error}\nEl código de la \
+                                   consulta SQL que ha dado error:\n{codigo_sql_conflictivo}\nDEBES DEVOLVER UN NUEVO CÓDIGO SQL, QUE NO DÉ ERROR. \
+                                   AQUI TIENES LOS METADATOS DE LA BASE DE DATOS: \n{self.metadata_str}\n. Para expresiones regulares utiliza \
                                    "~" en lugar de "REGEXP".'},      
-            {'role': 'user',   'content': f'{consulta_nlp}'},
-            {'role': 'assistant', 'content': '```sql\nEL CODIGO SQL;\n```'}
+            {'role': 'user',   'content': f'Mi consulta previa:\n{consulta_nlp}'},
+            {'role': 'assistant', 'content': 'DEVUELVES SOLO EL CODIGO SQL SIN NINGUN COMENTARIO EN ESTE FORMATO: ```sql\nEL CODIGO SQL;\n```'}
             ]
 
         nueva_respuesta_sql = enviar_promt_chat_completions_mode(
@@ -419,7 +435,10 @@ class SQLAgent(LLMsToDataBase):
             probabilidad_acumulada=1, 
             aleatoriedad=0)
         
-        return nueva_respuesta_sql
+        # extrae el codigo sql de la respuesta y se pasa a tabla, tambien se gestionan los errores
+        mensaje_o_tabla, codigo_sql, error = self._extract_sql_and_data(respuesta_sql=nueva_respuesta_sql)
+            
+        return mensaje_o_tabla, codigo_sql, error
 
 
     # decidimos si el usuario quiere continuar conversando

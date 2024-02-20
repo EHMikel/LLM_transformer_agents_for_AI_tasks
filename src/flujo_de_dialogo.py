@@ -1,5 +1,7 @@
 from calcular_tokens import num_tokens_from_string
 from open_ai_utils import enviar_promt_chat_completions_mode
+import numpy as np
+import os
 
 class HistoricoConversacion:
 
@@ -33,7 +35,7 @@ class HistoricoConversacion:
     def ventana_historico(self, max_tokens:int= 1000)->str:
         """
         Procesa el histórico de la conversación y acumula mensajes hasta alcanzar un límite de tokens, 
-        para devolver una ventana de historico.
+        para devolver una ventana de los ultimos max_tokens historico.
         """
         # Separar el histórico en palabras.
         palabras = self.historico.split(' ')[::-1]        # guardamos el historico de más reciente a más antiguo en una lista 
@@ -52,9 +54,29 @@ class HistoricoConversacion:
         self.ventana_ultimo_historico = historico_limitado_str      # guardamos esta ventana de historico como un atributo de instancia
 
         return historico_limitado_str                               # devolvemos la ventana de historico
+    
+    # guardamos el historico en un txt 
+    def almacenar_historico_txt(self, nombre_archivo:str):
+        ruta_chats = ruta_chats = 'chats/'
+    
+        # historico_completo = agent.historico_completo.historico
+        nombre_historico = nombre_archivo + str(np.random.randint(low= 0, high= 1_000_000)) +'.txt'
+        ruta_historico_chat = os.path.join(ruta_chats, nombre_historico)
+        with open(ruta_historico_chat, 'w', encoding='utf-8') as archivo_historico:
+            archivo_historico.write(self.historico)
 
+# OTRAS IDEAS
+    # guardamos la instancia del agente
+    # ruta_agente = os.path.join(ruta_chats, 'agenteSQL.pickle')
+    # with open(ruta_agente, 'wb') as guardar_agente:
+    #     pickle.dump(agent, guardar_agente)
 
-
+    # guardamos el historico en un txt 
+    # historico_completo = agent.historico_completo.historico
+    # nombre_historico = 'historico_SQL_' + str(np.random.randint(low= 0, high= 1_000_000)) +'.txt'
+    # ruta_historico_chat = os.path.join(ruta_chats, nombre_historico)
+    # with open(ruta_historico_chat, 'w', encoding='utf-8') as archivo_historico:
+    #     archivo_historico.write(historico_completo)
 
 
 def continuar_conversacion_AD(respuesta_usuario)-> bool:

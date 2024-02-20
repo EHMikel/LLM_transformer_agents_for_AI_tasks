@@ -83,3 +83,14 @@ def simular_respuesta_generativa(respuesta:str):
         print(respuesta[pos_ini:pos_fin], end= '')
         pos_ini= pos_fin
         sleep(abs(0.0001 + np.random.normal(loc= 0, scale= 0.001)))
+
+def printear_tabla_generativamente(tabla:str):
+    '''Es exactamente la misma funcion que simular tabla generativa pero printea más tokens por cada vez.
+       Es para que no este mucho tiempo printeando una tabla muy grande''' 
+    pos_ini = 0
+    pos_fin = 0
+    while pos_fin < len(tabla): 
+        pos_fin = pos_ini + int(1 + abs(round(np.random.normal(loc= 0, scale= 0.1), 2))*100)
+        print(tabla[pos_ini:pos_fin], end= '')
+        pos_ini= pos_fin
+        sleep(abs(0.0001 + np.random.normal(loc= 0, scale= 0.001)))

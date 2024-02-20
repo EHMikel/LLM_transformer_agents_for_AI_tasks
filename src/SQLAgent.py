@@ -1,6 +1,7 @@
 import openai
-from open_ai_utils import simular_respuesta_generativa
+from open_ai_utils import simular_respuesta_generativa, printear_tabla_generativamente
 from LLMstoDataBase import SQLAgent
+import numpy as np
 
 import pandas as pd
 import numpy as np 
@@ -27,8 +28,8 @@ def main():
     finalizar = False
     primera_consulta = True
 
-    pagila_bbdd = {
-        'bbdd_name':'pagila', 
+    rental_bbdd = {
+        'bbdd_name':'dvdrental', 
         'user'     :'postgres', 
         'password' :'123', 
         'host'     :'localhost', 
@@ -36,7 +37,7 @@ def main():
     }
 
     # inicializamos el agente
-    agent = SQLAgent(**pagila_bbdd)
+    agent = SQLAgent(**rental_bbdd)
 
     # entramos en la conversación-chat
     while finalizar == False:
@@ -51,19 +52,21 @@ def main():
         consulta_usuario = str(input())
 
         while conversacion: 
-            
-            if nueva_consulta== True:
+
+            # quizas este if no hace falta
+            if nueva_consulta== True:   
                 # printeamos la consulta del usuario
                 simular_respuesta_generativa(f'\nPROMPT_USUARIO_{agent.historico.contador_interacciones+1}:\n\n{consulta_usuario}\n\n')
 
                 # le pedimos la consulta al agente y printeamos la tabla
-                tabla_resultado, codigo_sql = agent.nlp_to_sql(
+                tabla_resultado, codigo_sql, error = agent.nlp_to_sql(
                         consulta_nlp=consulta_usuario, 
                         metadata_token_limit= 1000, 
                                 )      
 
                 simular_respuesta_generativa(f'\nAGENTE:\nAqui tienes el resultado de tu consulta:\n\n') # \n{tabla_resultado}
-                print(tabla_resultado, '\n\n')
+                printear_tabla_generativamente(tabla_resultado)
+                print('\n')
 
                 # generamos el informe de la consulta dandole al agente la tabla el codigo sql y la consulta del usuario
                 simular_respuesta_generativa('\nAGENTE:\nMe dispongo a generar el informe de tu consulta...\n\n')
@@ -78,7 +81,7 @@ def main():
                 simular_respuesta_generativa(f'\nAGENTE:\nAqui tienes el informe de tu consulta: \n{informe}\n\n')
 
             # continuamos chat sobre la lectura o nueva consulta
-            simular_respuesta_generativa('\nAGENTE:\n¿Tienes alguna otra consulta?\n\n')
+            simular_respuesta_generativa('\nAGENTE:\n¿Tienes alguna nueva consulta o duda sobre la consulta anterior?\n\n')
             consulta_usuario = str(input())
             conversacion, nueva_consulta = agent.continuar_conversando(
                 usuario= consulta_usuario, 
@@ -96,11 +99,12 @@ def main():
                     tabla_consulta_anterior=tabla_resultado, 
                     consulta_sql_anterior=codigo_sql
                     )
+                
                 # printeamos las nuevas respuesta del sistema
                 simular_respuesta_generativa(f'\nAGENTE:\nLa respuesta a tu consulta:\n{respuesta_agente}\n\n')
 
                 # continuamos chat sobre la lectura o nueva consulta
-                simular_respuesta_generativa('\nAGENTE:\n¿Tienes alguna otra consulta?\n\n')
+                simular_respuesta_generativa('\nAGENTE:\n¿Tienes alguna nueva consulta o duda sobre la consulta anterior?\n\n')
                 consulta_usuario = str(input())
                 conversacion, nueva_consulta = agent.continuar_conversando(
                     usuario= consulta_usuario, 
@@ -117,18 +121,7 @@ def main():
             agent.close_connection()
 
     simular_respuesta_generativa(f'\n\nHa sido un placer ayudarte. Hasta la próxima!!')
-
-    ruta_chats = 'chats/'
-    # guardamos la instancia del agente
-    # ruta_agente = os.path.join(ruta_chats, 'agenteSQL.pickle')
-    # with open(ruta_agente, 'wb') as guardar_agente:
-    #     pickle.dump(agent, guardar_agente)
-
-    # guardamos el historico en un txt 
-    historico_completo = agent.historico_completo.historico
-    ruta_historico_chat = os.path.join(ruta_chats, 'historico.txt')
-    with open(ruta_historico_chat, 'w', encoding='utf-8') as archivo_historico:
-        archivo_historico.write(historico_completo)
+    agent.historico_completo.almacenar_historico_txt(nombre_archivo= 'historico_SQL_')
 
 if __name__=='__main__':
     main()
