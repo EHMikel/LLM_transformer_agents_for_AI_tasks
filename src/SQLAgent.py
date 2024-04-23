@@ -62,7 +62,20 @@ def main():
                 tabla_resultado, codigo_sql, error = agent.nlp_to_sql(
                         consulta_nlp=consulta_usuario, 
                         metadata_token_limit= 1000, 
-                                )      
+                                )
+                intentos_resolver_error = 0    
+
+                # si el codigo SQL da error se intentara resovler hasta 3 veces
+                while error == 'SQL': 
+
+                    tabla_resultado, codigo_sql, error = agent.resolver_error_SQL(
+                        consulta_nlp=consulta_usuario, 
+                        codigo_sql_conflictivo= codigo_sql, 
+                        mensaje_error= tabla_resultado
+                            )
+                    if intentos_resolver_error >= 3: break
+                        
+                    intentos_resolver_error+= 1
 
                 simular_respuesta_generativa(f'\nAGENTE:\nAqui tienes el resultado de tu consulta:\n\n') # \n{tabla_resultado}
                 printear_tabla_generativamente(tabla_resultado)

@@ -35,8 +35,14 @@ def enviar_promt_completions_mode(
 
 
 def enviar_promt_chat_completions_mode(
-        mensaje: list, modelo: str = "gpt-4-1106-preview", formato: dict = None, funciones:list= None, 
-        forzar_funciones= None,  maximo_tokens: int= 500, aleatoriedad: float= 0.1, probabilidad_acumulada: float= 0.9):
+        mensaje: list, modelo: str = 
+        "gpt-4-1106-preview", 
+        formato: dict = None, 
+        funciones:list= None, 
+        forzar_funciones= None,  
+        maximo_tokens: int= 500, 
+        aleatoriedad: float= 0.1, 
+        probabilidad_acumulada: float= 0.9):
      
     respuesta = openai.chat.completions.create(
         messages= mensaje, 
@@ -48,6 +54,7 @@ def enviar_promt_chat_completions_mode(
         temperature=aleatoriedad, 
         top_p= probabilidad_acumulada
     )
+
     # si no se proporcionan herramientaas o funciones
     if funciones== None:
         if formato == {'type': 'json_object'}: 
@@ -61,6 +68,8 @@ def enviar_promt_chat_completions_mode(
             return json.loads(respuesta['choices'][0]['message']['tool_calls']['arguments'])
         
         else: return json.loads(respuesta.choices[0].message.tool_calls[0].function.arguments)
+
+
 
 def get_embedding(texto, model= "text-embedding-ada-002") -> list:
     text = texto.replace('\n', ' ')

@@ -6,3 +6,13 @@
 others/
 writings/
 data/others/
+data/signature_detection/signverod
+data/signature_detection/signverod__.zip
+proyecto_yolo/images/
+proyecto_yolo/yolov8m.pt
+proyecto_yolo/yolov8n.pt
+proyecto_yolo/yolov8x.pt
+signverod/images/
+signverod/labels/
+
+"C:\Users\plane\OneDrive\Escritorio\COMPUTING SCIENCE\TFM_transformer_agents\data\signature_detection\signverod"
