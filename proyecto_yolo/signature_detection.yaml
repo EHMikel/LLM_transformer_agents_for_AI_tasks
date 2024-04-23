@@ -1,0 +1,15 @@
+# Definición de la ruta de los conjuntos de datos
+path:  C:/Users/plane/OneDrive/Escritorio/COMPUTING SCIENCE/TFM_transformer_agents/proyecto_yolo # Ruta base a tus datos
+train: images/train  # Subcarpeta con imágenes de entrenamiento
+val: images/val      # Subcarpeta con imágenes de validación
+test: images/test    # Subcarpeta con imágenes de test (opcional)
+
+# # Número y nombres de las clases
+nc: 4  # Número de clases
+names: ['signature', 'initials', 'redaction', 'date']  # Nombres de las clases
+
+# names:
+#   0: signature
+#   1: initials
+#   2: redaction
+#   3: date
