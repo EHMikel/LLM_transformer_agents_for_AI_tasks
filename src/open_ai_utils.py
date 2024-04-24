@@ -5,6 +5,7 @@ import numpy as np
 from dotenv import load_dotenv
 from time import sleep
 import json
+#from flujo_de_dialogo import HistoricoConversacion
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -103,3 +104,5 @@ def printear_tabla_generativamente(tabla:str):
         print(tabla[pos_ini:pos_fin], end= '')
         pos_ini= pos_fin
         sleep(abs(0.0001 + np.random.normal(loc= 0, scale= 0.001)))
+
+

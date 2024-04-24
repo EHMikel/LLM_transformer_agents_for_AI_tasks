@@ -296,7 +296,7 @@ class ADAgent(AnomalyDetection):
                             generas un informe resumido y breve de lecturas; con número de registros, el maximo y minimo, media, etc. de las variables \
                             energy, power, T_outdoor, T_supply, RH_outdoor. Siempre das las unidades de las variables, pero no hables de cuales son  \
                             las variables de lectura, el usuario ya lo sabe.  Después, haces un breve resumen de predicciones: cuantas y cuales de las \
-                            instancias se consideran anomalas según las predicciones; 0 significa lectura normal, 1 anomalía. \
+                            instancias se consideran anomalas según su grado de anomalia. \
                             Adecúa tu respuesta a un maximo de {max_tokens_respuesta-100} tokens o más breve'}, 
                                     
         {'role': 'user', 

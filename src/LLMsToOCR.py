@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+
+import warnings
+warnings.filterwarnings('ignore')
+
 from ultralytics import YOLO
 import os 
 import cv2
@@ -18,10 +22,6 @@ api_key = os.getenv("API_KEY")
 openai.api_key = api_key
 
 from random import choice
-
-import warnings
-
-warnings.filterwarnings('ignore')
 
 import easyocr
 from PIL import Image
@@ -46,7 +46,7 @@ class LLMsToOCR():
         self.docu= choice(self.documents_names)                         # se elige un documento al azar
         self.documents_names.remove(self.docu)                          # se elimina ese documento de la lista
         self.document = os.path.join(self.documents_path, self.docu)    # en esta variable se guarda el full path de la imagen
-        return self.document                                            # aunqeu se gestiona de manera interna se devuelve el documento elegido
+        return self.docu                                           # aunqeu se gestiona de manera interna se devuelve el documento elegido
 
     def show_document(self): 
         imagen = cv2.imread(self.document, cv2.IMREAD_GRAYSCALE)  # Cargar en escala de grises
@@ -97,7 +97,7 @@ class LLMsToOCR():
 class OCRAgent(LLMsToOCR): 
 
     tools = [
-            {
+        {
         "type": "function",
         "function": {
             "name": "continuar_conversacion",
@@ -106,9 +106,8 @@ class OCRAgent(LLMsToOCR):
             ,o sobre el texto extraido de un documento mediante técnicas de OCR, entonces "continuar" = "False"\
             Si puedes responder al prompt del usuario con la información del historico, o demás info: "continuar"= "True", y "nueva_consulta" = "False"\
             Si el usuario hace una consulta que no puedes responder con el historico o demás información, y pide que se carge, procese o que resumas algún\
-            otro documento, entonces "continuar"= "True", y "nueva_consulta" = "True". Si "continuar" =  "False" entonces siempre "nueva_consulta" = "False"\
-            Debes diferenciar si el usuario quiere seguir conversando sobre la consulta anterior o tiene una nueva consulta, si el usuario se desvía del \
-            tema y escribe un prompt que no tiene nada que ver con el tema actual p.e ¿Qúe es la computación cuántica? "continuar" =  "False"',
+            otro documento, entonces "continuar"= "True", y "nueva_consulta" = "True". Si "continuar" =  "False" entonces siempre "nueva_consulta" = "False"',
+
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -120,7 +119,7 @@ class OCRAgent(LLMsToOCR):
                         "type": "boolean",
                         "description": "solo puede ser True o False. Clasifica si el usuario tiene una nueva consulta (True) o no (False)"
                                 },
-                },
+                        },
                 "required": ["continuar", "nueva_consulta"]
                         }
                     }
@@ -139,7 +138,7 @@ class OCRAgent(LLMsToOCR):
         self.llm_model = llm_model
 
 
-    def informe_resultado(self, consulta_usuario, max_tokens_resp:int= 2000): 
+    def informe_resultado(self, consulta_usuario, max_tokens_respuesta:int= 2000): 
 
         pred_df = self.predictions_df.to_markdown()
 
@@ -155,7 +154,7 @@ class OCRAgent(LLMsToOCR):
                                 meidante OCR, y debes informar al usuario de cuantas y cuales instancias a predicho YOLO en la imagen, y la  \
                                 ubicación aproximada de esas predicciones, pero no expongas las coordenadas de las detecciones explicitamente.\
                                 Para ello, el usuario te proporcionará el texto extraido de la imagen que esta en ingles, pero tu debes informar al usuario en castellano\
-                                y se te proporciona un dataframe con la info de las predicciones. Adecúa tu respuesta a un maximo de {max_tokens_resp-100} tokens o más breve'}, 
+                                y se te proporciona un dataframe con la info de las predicciones. Adecúa tu respuesta a un maximo de {max_tokens_respuesta-100} tokens o más breve'}, 
                                         
             {'role': 'user', 
                     'content': f'En base al siguiente texto extraido meidante OCR:\n{self.text_from_img}\n, y los resultados hechos por YOLO:\n{pred_df}\n\
@@ -176,7 +175,7 @@ class OCRAgent(LLMsToOCR):
         respuesta = enviar_promt_chat_completions_mode(
                         mensaje= prompt, 
                         modelo=self.llm_model, 
-                        maximo_tokens=max_tokens_resp, 
+                        maximo_tokens=max_tokens_respuesta, 
                         aleatoriedad=0.5, 
                         probabilidad_acumulada=0.7)
         

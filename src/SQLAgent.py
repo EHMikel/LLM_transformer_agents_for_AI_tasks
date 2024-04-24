@@ -78,7 +78,7 @@ def main():
                     intentos_resolver_error+= 1
 
                 simular_respuesta_generativa(f'\nAGENTE:\nAqui tienes el resultado de tu consulta:\n\n') # \n{tabla_resultado}
-                printear_tabla_generativamente(tabla_resultado)
+                print(tabla_resultado)
                 print('\n')
 
                 # generamos el informe de la consulta dandole al agente la tabla el codigo sql y la consulta del usuario

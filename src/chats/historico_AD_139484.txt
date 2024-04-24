@@ -1,0 +1,32 @@
+prompt_1 USUARIO:
+carga el siguiente documento y dime de que trata, ¿ cuales son las entidades implicadas en el?
+
+Texto_extraido_1 AGENTE:
+GENERAL SERVICES ADMINISTRATION SpPPLENENTAL AGREENEITT' DATE PUBLIC BUILDINGS SERVICE NO . 13 11/19/2007 SUPPLEMENTAL LEASE AGREEMENT To ZEASE No GS-048-45056 ADDRESS OF PREMISES 8Eh Avenue { 14*7 Street Birmingham, AL THIS AGREEMENT made and entered into this and between: 8th & 14th L.L.C . (the Lessor) Whose address 19: 4200 West Cypress Street Suite 444 Tampa , FL 33607-4168 Hereinafter called the Lessor and the ONITED STATES OF AMERICA hereinafter called the Government WHEREAS ., the parties hereto desire LO amend the above lease (the Lease} NOW THEREFORE these parties the considerations hereinafter mentioned covenant and agree that the said Lease 18 amended, 13 Eollows This Supplemental Lease Agreemnent (SLA) No 13 docurents the Tenant Improvement Allowancc (TIA) settlement [or the Lease in the amount of $29,903,070.00 (the Amount): The Settlement Amount is based on the original 100% construction drawing documents dated Jaedle22/n33 and spccifically excludes the following: (1) change orders identified and/or approved subsequent to said set of drawings; ad (2) incrcased operating expenscs, including but not limited to increased maintenance and insurance costs directly associated with the of the Seltlement Amount exceeding the TIA amonized into the rent. AIl such subsequent orders Or increased operating expenses shall be negotiated and compensated O documented under separate SLAs Alf ol the Settlement Amount over and above the TIA amortized in the rcnt pursuant t0 the l.ease in the amount 0f$17,220,970.00, OT = net total 0 $12,682,100.(0, shall be reimbursed to the Lessor via lump sum payment Or progress payment , As of the date appearing above on this SLA, GSA has made two (2) progress payment applications totaling $7,798,003.00 (0 the Lessor. A third progrcss application for payment dated 11/6/07 in the amount of $1,457,012.00 has been field verilied for accuracy, and GSA is processing this payment {0 {he Lessor under SLA No. 12. The balance of the Settlement Amount due in the arnount of $3,427,085.00 shall be paid by GSA to the Lessor over future progress payment draws Or upon substantia] completion olthe building: ##$ 00## End o( SLA #13*# k # # * 0##00 0 #######0#&0 All other termg and conditions of the leage shall remain in force and effect IN WITNESS WHEREOF the parties subgcribed their names a8 Qf the above date_ LBSSOR th & 14 L.L.C . Bx (Signature} (rille) Vi e Pnt Ik PRBSENCR DF RRNf DMITED STATES QF AMERICA CONTRACTING OFFICER @Y (signattre] GENERAL SERVICES ADMINISTRATION {officia] Title) GSA FORH 276 (REv 7 - 67} day by for portion change B Eh To{Vknk
+
+predicciones_YOLO_1 AGENTE:
+|    | objetos_detectados   |   confianza | ubicación_xy                          |
+|---:|:---------------------|------------:|:--------------------------------------|
+|  0 | signature            |    0.851241 | [1385.7030029296875, 3907.01953125]   |
+|  1 | signature            |    0.744125 | [1467.955810546875, 3579.67138671875] |
+|  2 | signature            |    0.741817 | [1356.1368408203125, 3714.8203125]    |
+
+respuesta_informe_1 AGENTE:
+Descripción del documento:
+
+El documento es un "Supplemental Lease Agreement" (Acuerdo de Arrendamiento Suplementario) relacionado con la Administración de Servicios Generales (General Services Administration) de los Estados Unidos, específicamente del Servicio de Edificios Públicos. El acuerdo es identificado con el número 13 y está fechado el 19 de noviembre de 2007. Se trata de una enmienda a un contrato de arrendamiento existente con el número GS-048-45056, que concierne a una propiedad ubicada en la 8th Avenue y 14th Street en Birmingham, Alabama.
+
+Las entidades implicadas en el acuerdo son la compañía "8th & 14th L.L.C." como el arrendador (Lessor), con dirección en Tampa, Florida, y el Gobierno de los Estados Unidos de América como el arrendatario (Government). El documento detalla un acuerdo sobre un "Tenant Improvement Allowance" (TIA), que es una cantidad de dinero acordada para las mejoras del inquilino, que asciende a $29,903,070.00. Se menciona que este monto se basa en los documentos de construcción originales y excluye órdenes de cambio posteriores y gastos operativos incrementados. También se detallan los pagos y las condiciones de reembolso al arrendador.
+
+Información especial detectada:
+
+El modelo YOLO ha detectado tres instancias de firmas en el documento con niveles de confianza altos. Las firmas están distribuidas en la imagen, con dos de ellas ubicadas en la parte inferior y una probablemente en la parte superior. Estas firmas podrían corresponder a las partes que firman el acuerdo, posiblemente representantes de "8th & 14th L.L.C." y un oficial de la Administración de Servicios Generales. No se han detectado otras instancias como iniciales, redacciones o fechas escritas a mano en la información proporcionada.
+
+Es importante mencionar que las ubicaciones de las firmas son aproximadas y se encuentran en diferentes áreas de la imagen, lo que sugiere que podrían estar asociadas a las secciones donde las partes involucradas en el acuerdo han firmado el documento.
+
+prompt_2 USUARIO:
+se menciona el lugar donde se ha firmado el documento? 
+
+respuesta_consulta_anterior_2 AGENTE:
+El texto extraído del documento no menciona específicamente el lugar donde se ha firmado el documento. Sin embargo, se proporciona la fecha de la firma, que es el 19 de noviembre de 2007, y se menciona que las partes involucradas en la firma son "8th & 14th L.L.C." y el "UNITED STATES OF AMERICA". Las firmas corresponden a un representante de "8th & 14th L.L.C." con el título "Vice President" y a un "CONTRACTING OFFICER" de la General Services Administration (GSA). Aunque se detalla la dirección de "8th & 14th L.L.C." en Tampa, Florida, no se especifica si esa es la ubicación donde se firmó el acuerdo.
+

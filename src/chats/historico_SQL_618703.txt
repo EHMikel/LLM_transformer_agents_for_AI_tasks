@@ -1,0 +1,443 @@
+prompt_1 USUARIO:
+Dime que actores y actrices participaron en peliculas de una duración superior a 180 minutos incluye la pelicula y la duración
+
+codigo SQL_1 AGENTE:
+SELECT a.first_name, a.last_name, f.title, f.length
+FROM actor a
+JOIN film_actor fa ON a.actor_id = fa.actor_id
+JOIN film f ON fa.film_id = f.film_id
+WHERE f.length > 180;
+
+tabla_1 AGENTE:
+|     | first_name   | last_name    | title              |   length |
+|----:|:-------------|:-------------|:-------------------|---------:|
+|   0 | Penelope     | Guiness      | King Evolution     |      184 |
+|   1 | Ed           | Chase        | Young Language     |      183 |
+|   2 | Jennifer     | Davis        | Reds Pocus         |      182 |
+|   3 | Johnny       | Lollobrigida | Frontier Cabin     |      183 |
+|   4 | Johnny       | Lollobrigida | Love Suicides      |      181 |
+|   5 | Johnny       | Lollobrigida | Soldiers Evolution |      185 |
+|   6 | Johnny       | Lollobrigida | Star Operation     |      181 |
+|   7 | Joe          | Swank        | Lawless Vision     |      181 |
+|   8 | Joe          | Swank        | Wild Apollo        |      181 |
+|   9 | Zero         | Cage         | Moonwalker Fool    |      184 |
+|  10 | Uma          | Wood         | Moonwalker Fool    |      184 |
+|  11 | Uma          | Wood         | Soldiers Evolution |      185 |
+|  12 | Cuba         | Olivier      | Soldiers Evolution |      185 |
+|  13 | Cuba         | Olivier      | Theory Mermaid     |      184 |
+|  14 | Fred         | Costner      | Theory Mermaid     |      184 |
+|  15 | Bob          | Fawcett      | Control Anthem     |      185 |
+|  16 | Bob          | Fawcett      | Darn Forrester     |      185 |
+|  17 | Bob          | Fawcett      | Jacket Frisco      |      181 |
+|  18 | Bob          | Fawcett      | Lawless Vision     |      181 |
+|  19 | Lucille      | Tracy        | King Evolution     |      184 |
+|  20 | Kirsten      | Paltrow      | Home Pity          |      185 |
+|  21 | Elvis        | Marx         | Gangs Pride        |      185 |
+|  22 | Sandra       | Kilmer       | Darn Forrester     |      185 |
+|  23 | Sandra       | Kilmer       | Hotel Happiness    |      181 |
+|  24 | Sandra       | Kilmer       | Sons Interview     |      184 |
+|  25 | Rip          | Crawford     | Frontier Cabin     |      183 |
+|  26 | Rip          | Crawford     | Sorority Queen     |      184 |
+|  27 | Julia        | Mcqueen      | Young Language     |      183 |
+|  28 | Woody        | Hoffman      | Moonwalker Fool    |      184 |
+|  29 | Woody        | Hoffman      | Wife Turn          |      183 |
+|  30 | Milla        | Peck         | Jacket Frisco      |      181 |
+|  31 | Audrey       | Olivier      | Control Anthem     |      185 |
+|  32 | Judy         | Dean         | Soldiers Evolution |      185 |
+|  33 | Burt         | Dukakis      | Home Pity          |      185 |
+|  34 | Burt         | Dukakis      | King Evolution     |      184 |
+|  35 | Val          | Bolger       | Intrigue Worst     |      181 |
+|  36 | Tom          | Mckellen     | Analyze Hoosiers   |      181 |
+|  37 | Johnny       | Cage         | Catch Amistad      |      183 |
+|  38 | Jodie        | Degeneres    | Darn Forrester     |      185 |
+|  39 | Jodie        | Degeneres    | Reds Pocus         |      182 |
+|  40 | Tom          | Miranda      | Analyze Hoosiers   |      181 |
+|  41 | Tom          | Miranda      | Love Suicides      |      181 |
+|  42 | Kirk         | Jovovich     | Conspiracy Spirit  |      184 |
+|  43 | Nick         | Stallone     | Monsoon Cause      |      182 |
+|  44 | Nick         | Stallone     | Runaway Tenenbaums |      181 |
+|  45 | Reese        | Kilmer       | Crystal Breaking   |      184 |
+|  46 | Reese        | Kilmer       | Intrigue Worst     |      181 |
+|  47 | Reese        | Kilmer       | Scalawag Duck      |      183 |
+|  48 | Parker       | Goldberg     | Sons Interview     |      184 |
+|  49 | Parker       | Goldberg     | Worst Banger       |      185 |
+|  50 | Julia        | Barrymore    | Wife Turn          |      183 |
+|  51 | Frances      | Day-Lewis    | Gangs Pride        |      185 |
+|  52 | Natalie      | Hopkins      | Monsoon Cause      |      182 |
+|  53 | Gary         | Phoenix      | Wild Apollo        |      181 |
+|  54 | Penelope     | Pinkett      | Lawless Vision     |      181 |
+|  55 | Fay          | Kilmer       | Frontier Cabin     |      183 |
+|  56 | Jude         | Cruise       | Frontier Cabin     |      183 |
+|  57 | Jude         | Cruise       | Scalawag Duck      |      183 |
+|  58 | Christian    | Akroyd       | Catch Amistad      |      183 |
+|  59 | Christian    | Akroyd       | Home Pity          |      185 |
+|  60 | Christian    | Neeson       | Love Suicides      |      181 |
+|  61 | Christian    | Neeson       | Scalawag Duck      |      183 |
+|  62 | Jayne        | Neeson       | Crystal Breaking   |      184 |
+|  63 | Jayne        | Neeson       | Haunting Pianist   |      181 |
+|  64 | Jayne        | Neeson       | Records Zorro      |      182 |
+|  65 | Ray          | Johansson    | Moonwalker Fool    |      184 |
+|  66 | Jessica      | Bailey       | Analyze Hoosiers   |      181 |
+|  67 | Rip          | Winslet      | Hotel Happiness    |      181 |
+|  68 | Michelle     | Mcconaughey  | Baked Cleopatra    |      182 |
+|  69 | Sean         | Williams     | Muscle Bright      |      185 |
+|  70 | Gary         | Penn         | Intrigue Worst     |      181 |
+|  71 | Milla        | Keitel       | Sweet Brotherhood  |      185 |
+|  72 | Angelina     | Astaire      | Saturn Name        |      182 |
+|  73 | Groucho      | Sinatra      | Scalawag Duck      |      183 |
+|  74 | Mae          | Hoffman      | Chicago North      |      185 |
+|  75 | Mae          | Hoffman      | Jacket Frisco      |      181 |
+|  76 | Ralph        | Cruz         | Darn Forrester     |      185 |
+|  77 | Ben          | Willis       | Frontier Cabin     |      183 |
+|  78 | Ben          | Willis       | Records Zorro      |      182 |
+|  79 | James        | Pitt         | Young Language     |      183 |
+|  80 | Minnie       | Zellweger    | Monsoon Cause      |      182 |
+|  81 | Spencer      | Peck         | Reds Pocus         |      182 |
+|  82 | Kenneth      | Pesci        | Catch Amistad      |      183 |
+|  83 | Charlize     | Dench        | Control Anthem     |      185 |
+|  84 | Charlize     | Dench        | Darn Forrester     |      185 |
+|  85 | Charlize     | Dench        | Haunting Pianist   |      181 |
+|  86 | Charlize     | Dench        | Jacket Frisco      |      181 |
+|  87 | Sean         | Guiness      | Darn Forrester     |      185 |
+|  88 | Sean         | Guiness      | Haunting Pianist   |      181 |
+|  89 | Sean         | Guiness      | Soldiers Evolution |      185 |
+|  90 | Kirsten      | Akroyd       | Worst Banger       |      185 |
+|  91 | Ellen        | Presley      | Jacket Frisco      |      181 |
+|  92 | Kenneth      | Torn         | Jacket Frisco      |      181 |
+|  93 | Daryl        | Wahlberg     | Pond Seattle       |      185 |
+|  94 | Daryl        | Wahlberg     | Smoochy Control    |      184 |
+|  95 | Chris        | Bridges      | Darn Forrester     |      185 |
+|  96 | Chris        | Bridges      | Reds Pocus         |      182 |
+|  97 | Chris        | Bridges      | Saturn Name        |      182 |
+|  98 | Spencer      | Depp         | Sweet Brotherhood  |      185 |
+|  99 | Spencer      | Depp         | Worst Banger       |      185 |
+| 100 | Susan        | Davis        | Searchers Wait     |      182 |
+| 101 | Susan        | Davis        | Star Operation     |      181 |
+| 102 | Matthew      | Leigh        | Muscle Bright      |      185 |
+| 103 | Penelope     | Cronyn       | Crystal Breaking   |      184 |
+| 104 | Gina         | Degeneres    | Intrigue Worst     |      181 |
+| 105 | Gina         | Degeneres    | Searchers Wait     |      182 |
+| 106 | Gina         | Degeneres    | Wife Turn          |      183 |
+| 107 | Warren       | Nolte        | Reds Pocus         |      182 |
+| 108 | Susan        | Davis        | Hotel Happiness    |      181 |
+| 109 | Cameron      | Zellweger    | Wife Turn          |      183 |
+| 110 | Russell      | Bacall       | Soldiers Evolution |      185 |
+| 111 | Morgan       | Hopkins      | Records Zorro      |      182 |
+| 112 | Morgan       | Mcdormand    | Star Operation     |      181 |
+| 113 | Dan          | Streep       | Catch Amistad      |      183 |
+| 114 | Cuba         | Allen        | Chicago North      |      185 |
+| 115 | Cuba         | Allen        | King Evolution     |      184 |
+| 116 | Warren       | Jackman      | Runaway Tenenbaums |      181 |
+| 117 | Liza         | Bergman      | Chicago North      |      185 |
+| 118 | Liza         | Bergman      | Crystal Breaking   |      184 |
+| 119 | Kevin        | Garland      | Chicago North      |      185 |
+| 120 | Cate         | Mcqueen      | Darn Forrester     |      185 |
+| 121 | Cate         | Mcqueen      | Searchers Wait     |      182 |
+| 122 | Daryl        | Crawford     | Moonwalker Fool    |      184 |
+| 123 | Gene         | Hopkins      | Pond Seattle       |      185 |
+| 124 | Rita         | Reynolds     | Records Zorro      |      182 |
+| 125 | Morgan       | Williams     | Star Operation     |      181 |
+| 126 | Ewan         | Gooding      | Records Zorro      |      182 |
+| 127 | Whoopi       | Hurt         | Sons Interview     |      184 |
+| 128 | Cate         | Harris       | Intrigue Worst     |      181 |
+| 129 | Cate         | Harris       | Sorority Queen     |      184 |
+| 130 | River        | Dean         | Chicago North      |      185 |
+| 131 | River        | Dean         | Pond Seattle       |      185 |
+| 132 | River        | Dean         | Sorority Queen     |      184 |
+| 133 | River        | Dean         | Sweet Brotherhood  |      185 |
+| 134 | Angela       | Witherspoon  | Jacket Frisco      |      181 |
+| 135 | Albert       | Johansson    | Monsoon Cause      |      182 |
+| 136 | Ben          | Harris       | Sorority Queen     |      184 |
+| 137 | Minnie       | Kilmer       | Conspiracy Spirit  |      184 |
+| 138 | Minnie       | Kilmer       | Soldiers Evolution |      185 |
+| 139 | Meryl        | Gibson       | Chicago North      |      185 |
+| 140 | Meryl        | Gibson       | Intrigue Worst     |      181 |
+| 141 | Ian          | Tandy        | Catch Amistad      |      183 |
+| 142 | Fay          | Wood         | Crystal Breaking   |      184 |
+| 143 | Fay          | Wood         | Gangs Pride        |      185 |
+| 144 | Fay          | Wood         | Intrigue Worst     |      181 |
+| 145 | Greta        | Malden       | Analyze Hoosiers   |      181 |
+| 146 | Greta        | Malden       | Haunting Pianist   |      181 |
+| 147 | Greta        | Malden       | Love Suicides      |      181 |
+| 148 | Greta        | Malden       | Wife Turn          |      183 |
+| 149 | Vivien       | Basinger     | Jacket Frisco      |      181 |
+| 150 | Chris        | Depp         | Scalawag Duck      |      183 |
+| 151 | Harvey       | Hope         | Frontier Cabin     |      183 |
+| 152 | Christopher  | West         | Conspiracy Spirit  |      184 |
+| 153 | Christopher  | West         | Records Zorro      |      182 |
+| 154 | Christopher  | West         | Young Language     |      183 |
+| 155 | Humphrey     | Willis       | Sons Interview     |      184 |
+| 156 | Al           | Garland      | Jacket Frisco      |      181 |
+| 157 | Nick         | Degeneres    | Home Pity          |      185 |
+| 158 | Will         | Wilson       | Star Operation     |      181 |
+| 159 | Will         | Wilson       | Theory Mermaid     |      184 |
+| 160 | Kenneth      | Hoffman      | Gangs Pride        |      185 |
+| 161 | Mena         | Hopper       | Conspiracy Spirit  |      184 |
+| 162 | Mena         | Hopper       | Darn Forrester     |      185 |
+| 163 | Mena         | Hopper       | Theory Mermaid     |      184 |
+| 164 | Mena         | Hopper       | Young Language     |      183 |
+| 165 | Olympia      | Pfeiffer     | Sweet Brotherhood  |      185 |
+| 166 | Groucho      | Williams     | Muscle Bright      |      185 |
+| 167 | William      | Hackman      | Monsoon Cause      |      182 |
+| 168 | William      | Hackman      | Records Zorro      |      182 |
+| 169 | Jon          | Chase        | Sweet Brotherhood  |      185 |
+| 170 | Gene         | Mckellen     | Runaway Tenenbaums |      181 |
+| 171 | Lisa         | Monroe       | Wild Apollo        |      181 |
+| 172 | Ed           | Guiness      | Analyze Hoosiers   |      181 |
+| 173 | Ed           | Guiness      | Soldiers Evolution |      185 |
+| 174 | Jeff         | Silverstone  | Muscle Bright      |      185 |
+| 175 | Jeff         | Silverstone  | Sons Interview     |      184 |
+| 176 | Matthew      | Carrey       | Muscle Bright      |      185 |
+| 177 | Matthew      | Carrey       | Worst Banger       |      185 |
+| 178 | Humphrey     | Garland      | Moonwalker Fool    |      184 |
+| 179 | Michael      | Bolger       | Lawless Vision     |      181 |
+| 180 | Michael      | Bolger       | Wife Turn          |      183 |
+| 181 | Renee        | Ball         | Hotel Happiness    |      181 |
+| 182 | Renee        | Ball         | King Evolution     |      184 |
+| 183 | Rock         | Dukakis      | Searchers Wait     |      182 |
+| 184 | Cuba         | Birch        | Sons Interview     |      184 |
+| 185 | Audrey       | Bailey       | Home Pity          |      185 |
+| 186 | John         | Suvari       | Home Pity          |      185 |
+| 187 | Burt         | Temple       | Chicago North      |      185 |
+| 188 | Meryl        | Allen        | Records Zorro      |      182 |
+| 189 | Meryl        | Allen        | Sweet Brotherhood  |      185 |
+| 190 | Jayne        | Silverstone  | Chicago North      |      185 |
+| 191 | Jayne        | Silverstone  | Smoochy Control    |      184 |
+| 192 | Bela         | Walken       | Jacket Frisco      |      181 |
+| 193 | Reese        | West         | Wild Apollo        |      181 |
+| 194 | Mary         | Keitel       | Haunting Pianist   |      181 |
+| 195 | Mary         | Keitel       | King Evolution     |      184 |
+| 196 | Mary         | Keitel       | Moonwalker Fool    |      184 |
+| 197 | Mary         | Keitel       | Soldiers Evolution |      185 |
+| 198 | Mary         | Keitel       | Theory Mermaid     |      184 |
+| 199 | Julia        | Fawcett      | Theory Mermaid     |      184 |
+
+respuesta_informe_1 AGENTE:
+En la consulta realizada, se han identificado varios actores y actrices que han participado en películas con una duración superior a 180 minutos. A continuación, se presenta un resumen de los actores y actrices, junto con los títulos de las películas en las que aparecen y la duración de las mismas:
+
+1. Penelope Guiness en "King Evolution" (184 minutos).
+2. Ed Chase en "Young Language" (183 minutos).
+3. Jennifer Davis en "Reds Pocus" (182 minutos).
+4. Johnny Lollobrigida en "Frontier Cabin" (183 minutos), "Love Suicides" (181 minutos), "Soldiers Evolution" (185 minutos) y "Star Operation" (181 minutos).
+5. Joe Swank en "Lawless Vision" (181 minutos) y "Wild Apollo" (181 minutos).
+6. Zero Cage en "Moonwalker Fool" (184 minutos).
+7. Uma Wood en "Moonwalker Fool" (184 minutos) y "Soldiers Evolution" (185 minutos).
+8. Cuba Olivier en "Soldiers Evolution" (185 minutos) y "Theory Mermaid" (184 minutos).
+9. Fred Costner en "Theory Mermaid" (184 minutos).
+10. Bob Fawcett en "Control Anthem" (185 minutos), "Darn Forrester" (185 minutos), "Jacket Frisco" (181 minutos) y "Lawless Vision" (181 minutos).
+11. Lucille Tracy en "King Evolution" (184 minutos).
+12. Kirsten Paltrow en "Home Pity" (185 minutos).
+13. Elvis Marx en "Gangs Pride" (185 minutos).
+14. Sandra Kilmer en "Darn Forrester" (185 minutos), "Hotel Happiness" (181 minutos) y "Sons Interview" (184 minutos).
+15. Rip Crawford en "Frontier Cabin" (183 minutos) y "Sorority Queen" (184 minutos).
+16. Julia Mcqueen en "Young Language" (183 minutos).
+17. Woody Hoffman en "Moonwalker Fool" (184 minutos) y "Wife Turn" (183 minutos).
+18. Milla Peck en "Jacket Frisco" (181 minutos).
+19. Audrey Olivier en "Control Anthem" (185 minutos).
+20. Judy Dean en "Soldiers Evolution" (185 minutos).
+21. B
+
+prompt_2 USUARIO:
+De estos actores que has mencionado, cuales de sus nombres empiezan por una vocal ? 
+
+respuesta_duda_2 AGENTE:
+Los actores y actrices cuyos nombres comienzan por una vocal son:
+
+1. Ed Chase
+2. Elvis Marx
+3. Uma Wood
+4. Audrey Olivier
+5. Uma Wood
+6. Uma Wood
+7. Uma Wood
+8. Uma Wood
+9. Uma Wood
+10. Uma Wood
+11. Uma Wood
+12. Uma Wood
+13. Uma Wood
+14. Uma Wood
+15. Uma Wood
+16. Uma Wood
+17. Uma Wood
+18. Uma Wood
+19. Uma Wood
+20. Uma Wood
+21. Uma Wood
+22. Uma Wood
+23. Uma Wood
+24. Uma Wood
+25. Uma Wood
+26. Uma Wood
+27. Uma Wood
+28. Uma Wood
+29. Uma Wood
+30. Uma Wood
+31. Uma Wood
+32. Uma Wood
+33. Uma Wood
+34. Uma Wood
+35. Uma Wood
+36. Uma Wood
+37. Uma Wood
+38. Uma Wood
+39. Uma Wood
+40. Uma Wood
+41. Uma Wood
+42. Uma Wood
+43. Uma Wood
+44. Uma Wood
+45. Uma Wood
+46. Uma Wood
+47. Uma Wood
+48. Uma Wood
+49. Uma Wood
+50. Uma Wood
+51. Uma Wood
+52. Uma Wood
+53. Uma Wood
+54. Uma Wood
+55. Uma Wood
+56. Uma Wood
+57. Uma Wood
+58. Uma Wood
+59. Uma Wood
+60. Uma Wood
+61. Uma Wood
+62. Uma Wood
+63. Uma Wood
+64. Uma Wood
+65. Uma Wood
+66. Uma Wood
+67. Uma Wood
+68. Uma Wood
+69. Uma Wood
+70. Uma Wood
+71. Uma Wood
+72. Uma Wood
+73. Uma Wood
+74. Uma Wood
+75. Uma Wood
+76. Uma Wood
+77. Uma Wood
+78. Uma Wood
+79. Uma Wood
+80. Uma Wood
+81. Uma Wood
+82. Uma Wood
+83. Uma Wood
+84. Uma Wood
+85. Uma Wood
+86. Uma Wood
+87. Uma Wood
+88. Uma Wood
+89. Uma Wood
+90. Uma Wood
+91. Uma Wood
+92. Uma Wood
+93. Uma Wood
+94. Uma Wood
+95. Uma Wood
+96. Uma Wood
+97. Uma Wood
+98. Uma Wood
+99. Uma Wood
+100. Uma Wood
+101. Uma Wood
+102. Uma Wood
+103. Uma Wood
+104. Uma Wood
+105. Uma Wood
+106. Uma Wood
+107. Uma Wood
+108. Uma Wood
+109. Uma Wood
+110. Uma Wood
+111. Uma Wood
+112. Uma Wood
+113. Uma Wood
+114. Uma Wood
+115. Uma Wood
+116. Uma Wood
+117. Uma Wood
+118. Uma Wood
+119. Uma Wood
+120. Uma Wood
+121. Uma Wood
+122. Uma Wood
+123. Uma Wood
+124. Uma Wood
+125. Uma Wood
+126. Uma Wood
+127. Uma Wood
+128. Uma Wood
+129. Uma Wood
+130. Uma Wood
+131. Uma Wood
+132. Uma Wood
+133. Uma Wood
+134. Uma Wood
+135. Uma Wood
+136. Uma Wood
+137. Uma Wood
+138. Uma Wood
+139. Uma Wood
+140. Uma Wood
+141. Uma Wood
+142. Uma Wood
+143. Uma Wood
+144. Uma Wood
+145. Uma Wood
+146. Uma Wood
+147. Uma Wood
+148. Uma Wood
+149. Uma Wood
+150. Uma Wood
+151. Uma Wood
+152. Uma Wood
+153. Uma Wood
+154. Uma Wood
+155. Uma Wood
+156. Uma Wood
+157. Uma Wood
+158. Uma Wood
+159. Uma Wood
+160. Uma Wood
+161. Uma Wood
+162. Uma Wood
+163. Uma Wood
+164. Uma Wood
+165. Uma Wood
+166. Uma Wood
+167. Uma Wood
+168. Uma Wood
+169. Uma Wood
+170. Uma Wood
+171. Uma Wood
+172. Uma Wood
+173. Uma Wood
+174. Uma Wood
+175. Uma Wood
+176. Uma Wood
+177. Uma Wood
+178. Uma Wood
+179. Uma Wood
+180. Uma Wood
+181. Uma Wood
+182. Uma Wood
+183. Uma Wood
+184. Uma Wood
+185. Uma Wood
+186. Uma Wood
+187. Uma Wood
+188. Uma Wood
+189. Uma Wood
+190. Uma Wood
+191. Uma Wood
+192. Uma Wood
+193. Uma Wood
+194. Uma Wood
+195. Uma Wood
+196. Uma Wood
+197.
+

@@ -1,0 +1,313 @@
+prompt_1 USUARIO:
+dame las 10 peliculas que más tiempo estubieron alquiladas. Incluye el nombre de la pelicula, la duración, y su categoria
+
+codigo SQL_1 AGENTE:
+SELECT f.title, f.length, c.name AS category, SUM(TIMESTAMPDIFF(SECOND, r.rental_date, r.return_date)) AS total_rental_time
+FROM rental r
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f ON i.film_id = f.film_id
+JOIN film_category fc ON f.film_id = fc.film_id
+JOIN category c ON fc.category_id = c.category_id
+GROUP BY f.film_id
+ORDER BY total_rental_time DESC
+LIMIT 10;
+
+error_1 AGENTE:
+
+AGENTE:
+Error al ejecutar el SQL:
+
+(psycopg2.errors.UndefinedColumn) column "second" does not exist
+LINE 1: ..., f.length, c.name AS category, SUM(TIMESTAMPDIFF(SECOND, r....
+                                                             ^
+
+[SQL: SELECT f.title, f.length, c.name AS category, SUM(TIMESTAMPDIFF(SECOND, r.rental_date, r.return_date)) AS total_rental_time
+FROM rental r
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f ON i.film_id = f.film_id
+JOIN film_category fc ON f.film_id = fc.film_id
+JOIN category c ON fc.category_id = c.category_id
+GROUP BY f.film_id
+ORDER BY total_rental_time DESC
+LIMIT 10;]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+
+
+codigo SQL_1 AGENTE:
+SELECT f.title, f.length, c.name AS category, SUM(EXTRACT(EPOCH FROM (r.return_date - r.rental_date))) AS total_rental_time
+FROM rental r
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f ON i.film_id = f.film_id
+JOIN film_category fc ON f.film_id = fc.film_id
+JOIN category c ON fc.category_id = c.category_id
+GROUP BY f.title, f.length, c.name
+ORDER BY total_rental_time DESC
+LIMIT 10;
+
+tabla_1 AGENTE:
+|    | title               |   length | category   |   total_rental_time |
+|---:|:--------------------|---------:|:-----------|--------------------:|
+|  0 | Ridgemont Submarine |       46 | New        |         1.60996e+07 |
+|  1 | Gleaming Jawbreaker |       89 | Sports     |         1.55786e+07 |
+|  2 | Timberland Sky      |       69 | Classics   |         1.55651e+07 |
+|  3 | Forward Temple      |       90 | Games      |         1.54697e+07 |
+|  4 | Butterfly Chocolat  |       89 | New        |         1.53736e+07 |
+|  5 | Rocketeer Mother    |      178 | Foreign    |         1.53568e+07 |
+|  6 | Hobbit Alien        |      157 | Drama      |         1.53116e+07 |
+|  7 | Telegraph Voyage    |      148 | Music      |         1.51621e+07 |
+|  8 | Network Peak        |       75 | Family     |         1.48669e+07 |
+|  9 | Grit Clockwork      |      137 | Games      |         1.47664e+07 |
+
+respuesta_informe_1 AGENTE:
+Las 10 películas que más tiempo estuvieron alquiladas, junto con sus duraciones y categorías, son las siguientes:
+
+1. "Ridgemont Submarine" con una duración de 46 minutos, categoría "New", y un tiempo total de alquiler de aproximadamente 16,099,600 segundos.
+2. "Gleaming Jawbreaker" de 89 minutos, categoría "Sports", con un tiempo total de alquiler de aproximadamente 15,578,600 segundos.
+3. "Timberland Sky" de 69 minutos, categoría "Classics", con un tiempo total de alquiler de aproximadamente 15,565,100 segundos.
+4. "Forward Temple" de 90 minutos, categoría "Games", con un tiempo total de alquiler de aproximadamente 15,469,700 segundos.
+5. "Butterfly Chocolat" de 89 minutos, categoría "New", con un tiempo total de alquiler de aproximadamente 15,373,600 segundos.
+6. "Rocketeer Mother" de 178 minutos, categoría "Foreign", con un tiempo total de alquiler de aproximadamente 15,356,800 segundos.
+7. "Hobbit Alien" de 157 minutos, categoría "Drama", con un tiempo total de alquiler de aproximadamente 15,311,600 segundos.
+8. "Telegraph Voyage" de 148 minutos, categoría "Music", con un tiempo total de alquiler de aproximadamente 15,162,100 segundos.
+9. "Network Peak" de 75 minutos, categoría "Family", con un tiempo total de alquiler de aproximadamente 14,866,900 segundos.
+10. "Grit Clockwork" de 137 minutos, categoría "Games", con un tiempo total de alquiler de aproximadamente 14,766,400 segundos.
+
+Estas películas representan las más populares o demandadas en términos de tiempo de alquiler, lo que podría indicar preferencias de los clientes por ciertos géneros o títulos específicos.
+
+prompt_2 USUARIO:
+dame los actores y actrizes que hayan participado en peliculas con una duración superior a 182 minutos, inlcyte la pelicula y su duración
+
+codigo SQL_2 AGENTE:
+SELECT a.actor_id, a.first_name, a.last_name, f.title, f.length
+FROM actor a
+JOIN film_actor fa ON a.actor_id = fa.actor_id
+JOIN film f ON fa.film_id = f.film_id
+WHERE f.length > 182;
+
+tabla_2 AGENTE:
+|     |   actor_id | first_name   | last_name    | title              |   length |
+|----:|-----------:|:-------------|:-------------|:-------------------|---------:|
+|   0 |          1 | Penelope     | Guiness      | King Evolution     |      184 |
+|   1 |          3 | Ed           | Chase        | Young Language     |      183 |
+|   2 |          5 | Johnny       | Lollobrigida | Frontier Cabin     |      183 |
+|   3 |          5 | Johnny       | Lollobrigida | Soldiers Evolution |      185 |
+|   4 |         11 | Zero         | Cage         | Moonwalker Fool    |      184 |
+|   5 |         13 | Uma          | Wood         | Moonwalker Fool    |      184 |
+|   6 |         13 | Uma          | Wood         | Soldiers Evolution |      185 |
+|   7 |         15 | Cuba         | Olivier      | Soldiers Evolution |      185 |
+|   8 |         15 | Cuba         | Olivier      | Theory Mermaid     |      184 |
+|   9 |         16 | Fred         | Costner      | Theory Mermaid     |      184 |
+|  10 |         19 | Bob          | Fawcett      | Control Anthem     |      185 |
+|  11 |         19 | Bob          | Fawcett      | Darn Forrester     |      185 |
+|  12 |         20 | Lucille      | Tracy        | King Evolution     |      184 |
+|  13 |         21 | Kirsten      | Paltrow      | Home Pity          |      185 |
+|  14 |         22 | Elvis        | Marx         | Gangs Pride        |      185 |
+|  15 |         23 | Sandra       | Kilmer       | Darn Forrester     |      185 |
+|  16 |         23 | Sandra       | Kilmer       | Sons Interview     |      184 |
+|  17 |         26 | Rip          | Crawford     | Frontier Cabin     |      183 |
+|  18 |         26 | Rip          | Crawford     | Sorority Queen     |      184 |
+|  19 |         27 | Julia        | Mcqueen      | Young Language     |      183 |
+|  20 |         28 | Woody        | Hoffman      | Moonwalker Fool    |      184 |
+|  21 |         28 | Woody        | Hoffman      | Wife Turn          |      183 |
+|  22 |         34 | Audrey       | Olivier      | Control Anthem     |      185 |
+|  23 |         35 | Judy         | Dean         | Soldiers Evolution |      185 |
+|  24 |         36 | Burt         | Dukakis      | Home Pity          |      185 |
+|  25 |         36 | Burt         | Dukakis      | King Evolution     |      184 |
+|  26 |         40 | Johnny       | Cage         | Catch Amistad      |      183 |
+|  27 |         41 | Jodie        | Degeneres    | Darn Forrester     |      185 |
+|  28 |         43 | Kirk         | Jovovich     | Conspiracy Spirit  |      184 |
+|  29 |         45 | Reese        | Kilmer       | Crystal Breaking   |      184 |
+|  30 |         45 | Reese        | Kilmer       | Scalawag Duck      |      183 |
+|  31 |         46 | Parker       | Goldberg     | Sons Interview     |      184 |
+|  32 |         46 | Parker       | Goldberg     | Worst Banger       |      185 |
+|  33 |         47 | Julia        | Barrymore    | Wife Turn          |      183 |
+|  34 |         48 | Frances      | Day-Lewis    | Gangs Pride        |      185 |
+|  35 |         55 | Fay          | Kilmer       | Frontier Cabin     |      183 |
+|  36 |         57 | Jude         | Cruise       | Frontier Cabin     |      183 |
+|  37 |         57 | Jude         | Cruise       | Scalawag Duck      |      183 |
+|  38 |         58 | Christian    | Akroyd       | Catch Amistad      |      183 |
+|  39 |         58 | Christian    | Akroyd       | Home Pity          |      185 |
+|  40 |         61 | Christian    | Neeson       | Scalawag Duck      |      183 |
+|  41 |         62 | Jayne        | Neeson       | Crystal Breaking   |      184 |
+|  42 |         64 | Ray          | Johansson    | Moonwalker Fool    |      184 |
+|  43 |         72 | Sean         | Williams     | Muscle Bright      |      185 |
+|  44 |         74 | Milla        | Keitel       | Sweet Brotherhood  |      185 |
+|  45 |         78 | Groucho      | Sinatra      | Scalawag Duck      |      183 |
+|  46 |         79 | Mae          | Hoffman      | Chicago North      |      185 |
+|  47 |         80 | Ralph        | Cruz         | Darn Forrester     |      185 |
+|  48 |         83 | Ben          | Willis       | Frontier Cabin     |      183 |
+|  49 |         84 | James        | Pitt         | Young Language     |      183 |
+|  50 |         88 | Kenneth      | Pesci        | Catch Amistad      |      183 |
+|  51 |         89 | Charlize     | Dench        | Control Anthem     |      185 |
+|  52 |         89 | Charlize     | Dench        | Darn Forrester     |      185 |
+|  53 |         90 | Sean         | Guiness      | Darn Forrester     |      185 |
+|  54 |         90 | Sean         | Guiness      | Soldiers Evolution |      185 |
+|  55 |         92 | Kirsten      | Akroyd       | Worst Banger       |      185 |
+|  56 |         95 | Daryl        | Wahlberg     | Pond Seattle       |      185 |
+|  57 |         95 | Daryl        | Wahlberg     | Smoochy Control    |      184 |
+|  58 |         98 | Chris        | Bridges      | Darn Forrester     |      185 |
+|  59 |        100 | Spencer      | Depp         | Sweet Brotherhood  |      185 |
+|  60 |        100 | Spencer      | Depp         | Worst Banger       |      185 |
+|  61 |        103 | Matthew      | Leigh        | Muscle Bright      |      185 |
+|  62 |        104 | Penelope     | Cronyn       | Crystal Breaking   |      184 |
+|  63 |        107 | Gina         | Degeneres    | Wife Turn          |      183 |
+|  64 |        111 | Cameron      | Zellweger    | Wife Turn          |      183 |
+|  65 |        112 | Russell      | Bacall       | Soldiers Evolution |      185 |
+|  66 |        116 | Dan          | Streep       | Catch Amistad      |      183 |
+|  67 |        118 | Cuba         | Allen        | Chicago North      |      185 |
+|  68 |        118 | Cuba         | Allen        | King Evolution     |      184 |
+|  69 |        121 | Liza         | Bergman      | Chicago North      |      185 |
+|  70 |        121 | Liza         | Bergman      | Crystal Breaking   |      184 |
+|  71 |        127 | Kevin        | Garland      | Chicago North      |      185 |
+|  72 |        128 | Cate         | Mcqueen      | Darn Forrester     |      185 |
+|  73 |        129 | Daryl        | Crawford     | Moonwalker Fool    |      184 |
+|  74 |        134 | Gene         | Hopkins      | Pond Seattle       |      185 |
+|  75 |        140 | Whoopi       | Hurt         | Sons Interview     |      184 |
+|  76 |        141 | Cate         | Harris       | Sorority Queen     |      184 |
+|  77 |        143 | River        | Dean         | Chicago North      |      185 |
+|  78 |        143 | River        | Dean         | Pond Seattle       |      185 |
+|  79 |        143 | River        | Dean         | Sorority Queen     |      184 |
+|  80 |        143 | River        | Dean         | Sweet Brotherhood  |      185 |
+|  81 |        152 | Ben          | Harris       | Sorority Queen     |      184 |
+|  82 |        153 | Minnie       | Kilmer       | Conspiracy Spirit  |      184 |
+|  83 |        153 | Minnie       | Kilmer       | Soldiers Evolution |      185 |
+|  84 |        154 | Meryl        | Gibson       | Chicago North      |      185 |
+|  85 |        155 | Ian          | Tandy        | Catch Amistad      |      183 |
+|  86 |        156 | Fay          | Wood         | Crystal Breaking   |      184 |
+|  87 |        156 | Fay          | Wood         | Gangs Pride        |      185 |
+|  88 |        157 | Greta        | Malden       | Wife Turn          |      183 |
+|  89 |        160 | Chris        | Depp         | Scalawag Duck      |      183 |
+|  90 |        161 | Harvey       | Hope         | Frontier Cabin     |      183 |
+|  91 |        163 | Christopher  | West         | Conspiracy Spirit  |      184 |
+|  92 |        163 | Christopher  | West         | Young Language     |      183 |
+|  93 |        164 | Humphrey     | Willis       | Sons Interview     |      184 |
+|  94 |        166 | Nick         | Degeneres    | Home Pity          |      185 |
+|  95 |        168 | Will         | Wilson       | Theory Mermaid     |      184 |
+|  96 |        169 | Kenneth      | Hoffman      | Gangs Pride        |      185 |
+|  97 |        170 | Mena         | Hopper       | Conspiracy Spirit  |      184 |
+|  98 |        170 | Mena         | Hopper       | Darn Forrester     |      185 |
+|  99 |        170 | Mena         | Hopper       | Theory Mermaid     |      184 |
+| 100 |        170 | Mena         | Hopper       | Young Language     |      183 |
+| 101 |        171 | Olympia      | Pfeiffer     | Sweet Brotherhood  |      185 |
+| 102 |        172 | Groucho      | Williams     | Muscle Bright      |      185 |
+| 103 |        176 | Jon          | Chase        | Sweet Brotherhood  |      185 |
+| 104 |        179 | Ed           | Guiness      | Soldiers Evolution |      185 |
+| 105 |        180 | Jeff         | Silverstone  | Muscle Bright      |      185 |
+| 106 |        180 | Jeff         | Silverstone  | Sons Interview     |      184 |
+| 107 |        181 | Matthew      | Carrey       | Muscle Bright      |      185 |
+| 108 |        181 | Matthew      | Carrey       | Worst Banger       |      185 |
+| 109 |        184 | Humphrey     | Garland      | Moonwalker Fool    |      184 |
+| 110 |        185 | Michael      | Bolger       | Wife Turn          |      183 |
+| 111 |        187 | Renee        | Ball         | King Evolution     |      184 |
+| 112 |        189 | Cuba         | Birch        | Sons Interview     |      184 |
+| 113 |        190 | Audrey       | Bailey       | Home Pity          |      185 |
+| 114 |        192 | John         | Suvari       | Home Pity          |      185 |
+| 115 |        193 | Burt         | Temple       | Chicago North      |      185 |
+| 116 |        194 | Meryl        | Allen        | Sweet Brotherhood  |      185 |
+| 117 |        195 | Jayne        | Silverstone  | Chicago North      |      185 |
+| 118 |        195 | Jayne        | Silverstone  | Smoochy Control    |      184 |
+| 119 |        198 | Mary         | Keitel       | King Evolution     |      184 |
+| 120 |        198 | Mary         | Keitel       | Moonwalker Fool    |      184 |
+| 121 |        198 | Mary         | Keitel       | Soldiers Evolution |      185 |
+| 122 |        198 | Mary         | Keitel       | Theory Mermaid     |      184 |
+| 123 |        199 | Julia        | Fawcett      | Theory Mermaid     |      184 |
+
+respuesta_informe_2 AGENTE:
+En la base de datos consultada, se han encontrado varios actores y actrices que han participado en películas con una duración superior a 182 minutos. A continuación se presenta un resumen de los datos relevantes:
+
+- Penelope Guiness participó en "King Evolution" (184 minutos).
+- Ed Chase actuó en "Young Language" (183 minutos).
+- Johnny Lollobrigida apareció en "Frontier Cabin" (183 minutos) y "Soldiers Evolution" (185 minutos).
+- Zero Cage y Uma Wood participaron en "Moonwalker Fool" (184 minutos).
+- Cuba Olivier estuvo en "Soldiers Evolution" (185 minutos) y "Theory Mermaid" (184 minutos).
+- Fred Costner actuó en "Theory Mermaid" (184 minutos).
+- Bob Fawcett apareció en "Control Anthem" y "Darn Forrester", ambas con una duración de 185 minutos.
+- Lucille Tracy participó en "King Evolution" (184 minutos).
+- Kirsten Paltrow estuvo en "Home Pity" (185 minutos).
+- Elvis Marx actuó en "Gangs Pride" (185 minutos).
+- Sandra Kilmer apareció en "Darn Forrester" (185 minutos) y "Sons Interview" (184 minutos).
+- Rip Crawford participó en "Frontier Cabin" (183 minutos) y "Sorority Queen" (184 minutos).
+- Julia Mcqueen y Woody Hoffman actuaron en "Young Language" (183 minutos), mientras que Hoffman también estuvo en "Moonwalker Fool" (184 minutos) y "Wife Turn" (183 minutos).
+
+Por cuestiones de brevedad, se ha proporcionado una selección representativa de los datos. Si se requiere información adicional sobre otros actores o actrices específicos, o más detalles sobre las películas listadas, por favor indíquelo para proporcionar una respuesta más detallada.
+
+prompt_3 USUARIO:
+dime de estos actores los nonmbres de los cuales empieza por una vocal
+
+codigo SQL_3 AGENTE:
+SELECT first_name, last_name FROM actor WHERE first_name ~ '^[AEIOU]';
+
+tabla_3 AGENTE:
+|    | first_name   | last_name   |
+|---:|:-------------|:------------|
+|  0 | Ed           | Chase       |
+|  1 | Uma          | Wood        |
+|  2 | Elvis        | Marx        |
+|  3 | Alec         | Wayne       |
+|  4 | Audrey       | Olivier     |
+|  5 | Anne         | Cronyn      |
+|  6 | Angela       | Hudson      |
+|  7 | Adam         | Grant       |
+|  8 | Angelina     | Astaire     |
+|  9 | Ellen        | Presley     |
+| 10 | Albert       | Nolte       |
+| 11 | Adam         | Hopper      |
+| 12 | Ed           | Mansfield   |
+| 13 | Ewan         | Gooding     |
+| 14 | Angela       | Witherspoon |
+| 15 | Albert       | Johansson   |
+| 16 | Emily        | Dee         |
+| 17 | Ian          | Tandy       |
+| 18 | Oprah        | Kilmer      |
+| 19 | Al           | Garland     |
+| 20 | Olympia      | Pfeiffer    |
+| 21 | Alan         | Dreyfuss    |
+| 22 | Ed           | Guiness     |
+| 23 | Audrey       | Bailey      |
+
+respuesta_informe_3 AGENTE:
+Según la consulta SQL proporcionada, la lista de nombres de actores que comienzan con una vocal es la siguiente:
+
+1. Ed Chase
+2. Uma Wood
+3. Elvis Marx
+4. Alec Wayne
+5. Audrey Olivier
+6. Anne Cronyn
+7. Angela Hudson
+8. Adam Grant
+9. Angelina Astaire
+10. Ellen Presley
+11. Albert Nolte
+12. Adam Hopper
+13. Ed Mansfield
+14. Ewan Gooding
+15. Angela Witherspoon
+16. Albert Johansson
+17. Emily Dee
+18. Ian Tandy
+19. Oprah Kilmer
+20. Al Garland
+21. Olympia Pfeiffer
+22. Alan Dreyfuss
+23. Ed Guiness
+24. Audrey Bailey
+
+Todos estos nombres empiezan con una de las vocales A, E, I, O o U.
+
+prompt_4 USUARIO:
+dime de estos actores que acabas de mencionar cuales tienen un apellido que empieze por una vocal? 
+
+respuesta_duda_4 AGENTE:
+Los actores de la lista anterior cuyos apellidos comienzan con una vocal son:
+
+1. Ed Chase
+2. Uma Wood
+3. Audrey Olivier
+4. Ellen Presley
+5. Ian Tandy
+6. Oprah Kilmer
+7. Alan Dreyfuss
+8. Audrey Bailey
+
